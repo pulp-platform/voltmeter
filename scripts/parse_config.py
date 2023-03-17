@@ -10,21 +10,18 @@ import os
 import yaml
 
 # define expected YAML syntax
-config_syntax = {'parameters':{}, 'benchmarks':[{'name':True, 'libs':None, 'path':True, 'args':None}]}
+config_syntax = {'parameters':{}, 'benchmarks':[{'name':True, 'path':True, 'args':None}]}
 
 if __name__ == '__main__':
     # input
     CONFIG_YML = os.getenv('VOLTMETER_YML')
     # outputs
     OUTPUT_MK = os.getenv('VOLTMETER_MK')
-    BENCHMARKS_SH = os.getenv('BENCHMARKS_SH')
 
     if CONFIG_YML is None:
         raise Exception('VOLTMETER_YML not set')
     if OUTPUT_MK is None:
         raise Exception('VOLTMETER_MK not set')
-    if BENCHMARKS_SH is None:
-        raise Exception('BENCHMARKS_SH not set')
 
     # get config from YAML file
     with open(CONFIG_YML, 'r') as f:
@@ -56,18 +53,7 @@ if __name__ == '__main__':
                 b[key] = None
         b['path'] = os.path.abspath(b['path'])
 
-    # collect all libraries used by benchmarks
-    libs = set()
-    for b in config['benchmarks']:
-        libs = libs.union(b['libs'].split(' ') if b['libs'] is not None else [])
     # generate makefrag
     with open(OUTPUT_MK, 'w') as f:
         for key in config['parameters']:
             f.write('{} := {}\n'.format(key, config['parameters'][key]))
-        f.write('BENCHMARK_LIBS := {}\n'.format(' '.join(libs)))
-    # generate script to launch benchmarks
-    #TODO: Does not really need the script, but shared library path + arguments
-    with open(BENCHMARKS_SH, 'w') as f:
-        f.write('#!/bin/bash\n')
-        for b in config['benchmarks']:
-            f.write('{} {}\n'.format(b['path'], b['args'] if b['args'] is not None else ''))

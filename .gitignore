@@ -1,4 +1,4 @@
 src/build
 config/voltmeter.mk
 install
-traces
+**/traces

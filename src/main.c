@@ -362,20 +362,24 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state){
         if (CPU)
           argp_failure(state, 1, 0, "--events all_events is not supported by CPU. See --help for more information.");
       if (arguments->event_source == CONFIG){
-        if (CPU)
+#if CPU
           if (arguments->config_cpu == NULL)
             argp_failure(state, 1, 0, "missing required argument for option --config_cpu. See --help for more information.");
-        if (GPU)
+#endif
+#if GPU
           if (arguments->config_gpu == NULL)
             argp_failure(state, 1, 0, "missing required argument for option --config_gpu. See --help for more information.");
+#endif
       }
       if (arguments->event_source == CLI){
-        if (CPU)
+#if CPU
           if (arguments->cli_cpu == NULL)
             argp_failure(state, 1, 0, "missing required argument for option --cli_cpu. See --help for more information.");
-        if (GPU)
+#endif
+#if GPU
           if (arguments->cli_gpu == NULL)
             argp_failure(state, 1, 0, "missing required argument for option -cli_gpu. See --help for more information.");
+#endif
       }
       // check return_mode argument
       if (arguments->return_mode == NO_RETURN)

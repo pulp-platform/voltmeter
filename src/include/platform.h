@@ -7,18 +7,6 @@
 #ifndef _PLATFORM_H
 #define _PLATFORM_H
 
-// !!!!!!!!!!!!!
-//  TEMPORARY
-// !!!!!!!!!!!!!
-//TODO: Remove this
-#define __JETSON_AGX_XAVIER
-#define CPU 1
-#define GPU 1
-//TODO: Remove this
-// !!!!!!!!!!!!!
-//  TEMPORARY
-// !!!!!!!!!!!!!
-
 #ifdef __JETSON_AGX_XAVIER
   // files
   #define INA_0x40_POWER_CH0_FILE "/sys/bus/i2c/drivers/ina3221x/1-0040/iio:device0/in_power0_input"

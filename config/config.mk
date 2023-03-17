@@ -14,8 +14,9 @@ TRACE_DIR   ?= $(ROOT_DIR)/trace
 
 # files
 VOLTMETER_YML := $(CONFIG_DIR)/voltmeter.yml
-VOLTMETER_MK  := $(CONFIG_DIR)/params.mk
-BENCHMARKS_SH := $(SCRIPTS_DIR)/benchmarks.sh
+VOLTMETER_MK  := $(CONFIG_DIR)/voltmeter.mk
+
+include $(CONFIG_DIR)/voltmeter.mk
 
 # extension of files to lint with clang-format
 CLANG_FORMAT_EXT := c,h,C,H,cpp,hpp,cc,hh,c++,h++,cxx,hxx,cu
