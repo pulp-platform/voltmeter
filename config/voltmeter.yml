@@ -1,0 +1,21 @@
+parameters:
+  # PLATFORM can be: jetson_agx_xavier
+  PLATFORM: jetson_agx_xavier
+  PROFILE_CPU: 0
+  PROFILE_GPU: 1
+  NUM_RUN: 3
+  SAMPLE_PERIOD_US: 100000
+
+benchmarks:
+  - name: particle_finder
+    libs: -fopenmp -lm
+    path: ../../workloads/rodinia/openmp/particlefilter/particle.so
+    args: -x 128 -y 128 -z 10 -np 100000
+  - name: gaussian
+    libs: -gpu_cap=72 -lm
+    path: ../../workloads/rodinia/bin/test.so
+    args: -x 128 -y 128 -z 10 -np 100000
+  - name: lavamd
+    libs: -omp -lm
+    path: ../lavamd.test
+    args:
