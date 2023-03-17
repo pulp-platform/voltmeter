@@ -1,0 +1,6 @@
+# Voltmeter
+
+## License
+Voltmeter is made available under permissive open-source licenses.
+All files but the ones contained in `src/deps` are released under Apache License 2.0 (`Apache-2.0`), see `LICENSE`.
+The `src/deps` directory contains third-party sources that come with their own licenses. See their respective folders for the licenses used.
