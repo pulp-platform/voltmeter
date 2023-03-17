@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 #
-# Author: Sergio Mazzola, ETH Zurich
+# Author: Sergio Mazzola, ETH Zurich <smazzola@iis.ee.ethz.ch>
 
 # directories
 ROOT_DIR    := $(shell git rev-parse --show-toplevel 2>/dev/null)
