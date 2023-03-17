@@ -21,6 +21,19 @@ int cat_path(char *path, char *filename, char *full_path) {
   return  sprintf(full_path, format_string, path, filename);
 }
 
+char *path_basename(char *path) {
+  // strip path from filename and remove extension, if any
+  char *base = strrchr(path, '/');
+  if (base == NULL)
+    base = path;
+  else
+    base++;
+  char *ext = strrchr(base, '.');
+  if (ext != NULL)
+    *ext = '\0';
+  return base;
+}
+
 int jsmn_parse_token(const char *json_string, jsmntok_t *tok, const char *format, ...) {
   char temp[200];
   va_list args;

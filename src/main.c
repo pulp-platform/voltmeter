@@ -25,6 +25,7 @@
 #include <platform.h>
 #include <profiler.h>
 #include <helper.h>
+#include <dlfcn.h>
 #if CPU
 #include <cpu.h>
 #endif
@@ -62,9 +63,10 @@ static struct argp_option options[] = {
     {"config_gpu", 'g', "CONFIG_FILE_GPU", 0, "Path to the event configuration file for the GPU profiling; only if events == 'config'", 2},
     {"cli_gpu", 'm', "CLI_EVENTS_GPU", 0, "List of GPU events to profile, separated by commas; only if events == 'cli'", 4},
 #endif
-    {"return", 'r', "RETURN_MODE", 0, "Decide whether to run a profiling with the given events or just count the number of required passes; RETURN_MODE can be 'profile' or 'num_passes'", 5},
-    {"trace_dir", 't', "TRACE_DIR", 0, "Path to the directory where to store the trace files; only if return == 'profile'", 6},
-    {"benchmark_name", 'b', "BENCHMARK_NAME", 0, "Name of the benchmark to be profiled; only if return == 'profile'", 7},
+    {"mode", 'r', "MODE", 0, "Decide in which mode to run Voltmeter; MODE can be 'char', 'profile' 'num_passes'", 5},
+    {"trace_dir", 't', "TRACE_DIR", 0, "Path to the directory where to store the trace files; only if mode == 'char' or 'profile'", 6},
+    {"benchmark", 'b', "BENCHMARK_PATH", 0, "Path of benchmark compiled as a dynamic library; only if mode == 'char' or 'profile'", 7},
+    {"benchmark_args", 'a', "BENCHMARK_ARGS", 0, "Arguments to be passed to the benchmark; only if mode == 'char' or 'profile'", 8},
     {0}
 };
 
@@ -80,9 +82,10 @@ struct arguments {
   gpu_event_t *cli_gpu;
   unsigned int num_cli_gpu;
 #endif
-  enum {NO_RETURN, PROFILE, NUM_PASSES} return_mode;
+  enum {NO_MODE, CHARACTERIZATION, PROFILE, NUM_PASSES} mode;
   char *trace_dir;
-  char *benchmark_name;
+  char *benchmark;
+  char *benchmark_args;
 };
 
 static error_t parse_opt(int key, char *arg, struct argp_state *state);
@@ -116,9 +119,10 @@ int main(int argc, char *argv[]) {
   arguments.cli_gpu = NULL;
   arguments.num_cli_gpu = 0;
 #endif
-  arguments.return_mode = NO_RETURN;
+  arguments.mode = NO_MODE;
   arguments.trace_dir = NULL;
-  arguments.benchmark_name = NULL;
+  arguments.benchmark = NULL;
+  arguments.benchmark_args = NULL;
   argp_parse(&argp, argc, argv, 0, 0, &arguments);
 
   // print all arguments parsed by argp
@@ -158,13 +162,16 @@ int main(int argc, char *argv[]) {
     printf("\n");
 #endif
   }
-  if (arguments.return_mode == PROFILE)
-    printf("return_mode: profile\n");
-  else if (arguments.return_mode == NUM_PASSES)
-    printf("return_mode: num_passes\n");
-  if (arguments.return_mode == PROFILE){
+  if (arguments.mode == CHARACTERIZATION)
+    printf("mode: characterization\n");
+  else if (arguments.mode == PROFILE)
+    printf("mode: profile\n");
+  else if (arguments.mode == NUM_PASSES)
+    printf("mode: num_passes\n");
+  if (arguments.mode == PROFILE){
     printf("trace_dir: %s\n", arguments.trace_dir);
-    printf("benchmark_name: %s\n", arguments.benchmark_name);
+    printf("benchmark: %s\n", arguments.benchmark);
+    printf("benchmark_args: %s\n", arguments.benchmark_args);
   }
   printf("═════════════════════════════════════\n\n");
 
@@ -189,12 +196,15 @@ int main(int argc, char *argv[]) {
  * └───────────────────────────────────────────────────────┘
  */
   FILE *trace_file;
+  // strip path from arguments.benchmark
+  char *benchmark_path = strdup(arguments.benchmark);
+  char *benchmark_name = path_basename(arguments.benchmark);
 
   // generate output trace path
-  if (arguments.return_mode == PROFILE){
+  if (arguments.mode == CHARACTERIZATION || arguments.mode == PROFILE){
     // generate trace name
     char trace_name[TRACE_NAME_LEN] = {'\0'};
-    sprintf(trace_name, "%s", arguments.benchmark_name);
+    sprintf(trace_name, "%s", benchmark_name);
 #if CPU
     sprintf(trace_name + strlen(trace_name), "_cpu_%u", cpu_freq);
 #endif
@@ -255,14 +265,87 @@ int main(int argc, char *argv[]) {
 #endif
   }
 
-  if (arguments.return_mode == NUM_PASSES){
+  if (arguments.mode == NUM_PASSES){
 #if CPU
-    printf("%s:%d: 'num_passes' return mode is not supported for CPU.\n", __FILE__, __LINE__);
+    printf("%s:%d: 'num_passes' mode is not supported for CPU.\n", __FILE__, __LINE__);
     exit(1);
 #endif
 #if GPU
     return num_pass_gpu;
 #endif
+  }
+
+/*
+ * ┌───────────────────────────────────────────────────────┐
+ * │                       Profiling                       │
+ * └───────────────────────────────────────────────────────┘
+ */
+
+  if (arguments.mode == CHARACTERIZATION || arguments.mode == PROFILE){
+#if GPU
+    if (arguments.mode == PROFILE)
+      if (num_pass_gpu > 1) {
+        printf("%s:%d: 'profile' mode for GPU does not support multiple passes.\n", __FILE__, __LINE__);
+        exit(1);
+      }
+#endif
+
+    // setup profiler
+    //TODO
+
+    // prepare benchmark
+    void* benchmark_handle = dlopen(benchmark_path, RTLD_NOW | RTLD_LOCAL);
+    if (!benchmark_handle) {
+        fputs(dlerror(), stdout);
+        printf("\n");
+        printf("%s:%d: benchmark %s cannot be opened.\n", __FILE__, __LINE__, benchmark_path);
+        exit(1);
+    }
+    void (*benchmark)(int argc, char** argv) = dlsym(benchmark_handle, "main");
+    if (!benchmark) {
+        fputs(dlerror(), stdout);
+        printf("\n");
+        printf("%s:%d: benchmark %s cannot be run.\n", __FILE__, __LINE__, benchmark_path);
+        exit(1);
+    }
+
+
+    // parse benchmark arguments into array of strings benchmark_args
+    int num_benchmark_args = 1;
+    char **benchmark_args = NULL;
+
+    if (arguments.benchmark_args == NULL){
+      // handle if benchmark has no arguments
+      benchmark_args = malloc(2 * sizeof(char*));
+      if (benchmark_args == NULL){
+        printf("%s:%d: failed to allocate memory.\n", __FILE__, __LINE__);
+        exit(1);
+      }
+    } else {
+      char *token = strtok(arguments.benchmark_args, " ");
+      while (token != NULL) {
+        num_benchmark_args++;
+        benchmark_args = realloc(benchmark_args, num_benchmark_args * sizeof(char*));
+        if (benchmark_args == NULL){
+          printf("%s:%d: failed to allocate memory.\n", __FILE__, __LINE__);
+          exit(1);
+        }
+        benchmark_args[num_benchmark_args - 1] = token;
+        token = strtok(NULL, " ");
+      }
+    }
+    benchmark_args[0] = benchmark_path;
+    benchmark_args[num_benchmark_args] = NULL; // terminate argv[argc] should be NULL
+
+    // run benchmark
+    printf("Running benchmark '%s' with %d arguments.\n", benchmark_name, num_benchmark_args);
+    printf("Benchmark arguments:\n");
+    for (int i = 0; i < num_benchmark_args; i++)
+      printf("  argv[%d] = %s \n", i, benchmark_args[i]);
+    printf("\n\n");
+    benchmark(num_benchmark_args, benchmark_args);
+    // close benchmark
+    dlclose(benchmark_handle);
   }
 
 /*
@@ -279,7 +362,7 @@ int main(int argc, char *argv[]) {
   free(arguments.cli_gpu);
 #endif
   // close files
-  if (arguments.return_mode == PROFILE)
+  if (arguments.mode == CHARACTERIZATION || arguments.mode == PROFILE)
     fclose(trace_file);
   return 0;
 }
@@ -340,10 +423,12 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state){
       break;
 #endif
     case 'r':
-      if (!strcmp(arg, "profile")){
-        arguments->return_mode = PROFILE;
+      if (!strcmp(arg, "characterization")){
+        arguments->mode = CHARACTERIZATION;
+      } else if (!strcmp(arg, "profile")){
+        arguments->mode = PROFILE;
       } else if (!strcmp(arg, "num_passes")) {
-        arguments->return_mode = NUM_PASSES;
+        arguments->mode = NUM_PASSES;
       } else {
         argp_failure(state, 1, 0, "invalid argument for option %c: %s. See --help for more information.", key, arg);
       }
@@ -352,7 +437,10 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state){
       arguments->trace_dir = arg;
       break;
     case 'b':
-      arguments->benchmark_name = arg;
+      arguments->benchmark = arg;
+      break;
+    case 'a':
+      arguments->benchmark_args = arg;
       break;
     case ARGP_KEY_END:
       // check event_source argument
@@ -381,18 +469,21 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state){
             argp_failure(state, 1, 0, "missing required argument for option -cli_gpu. See --help for more information.");
 #endif
       }
-      // check return_mode argument
-      if (arguments->return_mode == NO_RETURN)
-        argp_failure(state, 1, 0, "missing required argument for option --return. See --help for more information.");
-      if (arguments->return_mode == PROFILE){
+      // check mode argument
+      if (arguments->mode == NO_MODE)
+        argp_failure(state, 1, 0, "missing required argument for option --mode. See --help for more information.");
+      if (arguments->mode == CHARACTERIZATION)
+        if (CPU && GPU)
+          argp_failure(state, 1, 0, "--mode characterization only supports one device at a time. See --help for more information.");
+      if (arguments->mode == CHARACTERIZATION || arguments->mode == PROFILE){
         if (arguments->trace_dir == NULL)
           argp_failure(state, 1, 0, "missing required argument for option --trace_dir. See --help for more information.");
-        if (arguments->benchmark_name == NULL)
+        if (arguments->benchmark == NULL)
           argp_failure(state, 1, 0, "missing required argument for option --benchmark_name. See --help for more information.");
       }
-      if (arguments->return_mode == NUM_PASSES){
+      if (arguments->mode == NUM_PASSES){
         if (CPU)
-          argp_failure(state, 1, 0, "--return profile is not supported by CPU. See --help for more information.");
+          argp_failure(state, 1, 0, "--mode num_passes is not supported by CPU. See --help for more information.");
       }
       break;
     default:
