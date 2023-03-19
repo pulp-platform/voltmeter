@@ -6,37 +6,42 @@
 
 include ../config/config.mk
 
+# target
 TARGET := voltmeter
 TARGET := $(addprefix $(INSTALL_DIR)/,$(TARGET))
-
 BUILD_DIR ?= $(SRC_DIR)/build
 
+# source
 SRCS := $(shell find $(SRC_DIR) -name "*.c" -type f)
 OBJS := $(SRCS:$(SRC_DIR)/%.c=$(BUILD_DIR)/%.o)
 DEPS := $(OBJS:.o=.d)
 
-# includes
-INC_DIRS := $(shell find $(SRC_DIR) -path $(BUILD_DIR) -prune -o -type d -print)
-INCLUDES += $(addprefix -I,$(INC_DIRS))
-# additional includes
-INCLUDES += -I$(CUDA_PATH)/../include -I$(CUDA_PATH)/include
+# general includes
+INC_DIRS += $(shell find $(SRC_DIR) -path $(BUILD_DIR) -prune -o -type d -print)
+# general libraries
+LIB_DIRS +=
+LIBS     += -ldl -lm
+# general flags
+FLAGS    += -MMD -MP
+# general defines
+DEFINES  += -DCPU=$(PROFILE_CPU) -DGPU=$(PROFILE_GPU)
+DEFINES  += -DNUM_RUN=$(NUM_RUN) -DSAMPLE_PERIOD_US=$(SAMPLE_PERIOD_US)
 
-# libraries
-LIB_DIRS := $(CUDA_PATH)/../lib64 $(CUDA_PATH)/lib64
-LIBS += $(addprefix -L,$(LIB_DIRS))
-# additional libraries
-LIBS += -ldl -lcuda -lcudart -lm -lcupti
-
-# defines
-DEFINES += -DCPU=$(PROFILE_CPU) -DGPU=$(PROFILE_GPU)
-DEFINES += -DNUM_RUN=$(NUM_RUN) -DSAMPLE_PERIOD_US=$(SAMPLE_PERIOD_US)
+# platform-specific
 ifeq ($(PLATFORM),jetson_agx_xavier)
-DEFINES += -D__JETSON_AGX_XAVIER
+INC_DIRS += $(CUDA_PATH)/../include $(CUDA_PATH)/include
+LIB_DIRS += $(CUDA_PATH)/../lib64 $(CUDA_PATH)/lib64
+LIBS     += -lcuda -lcudart -lcupti
+FLAGS    +=
+DEFINES  += -D__JETSON_AGX_XAVIER
 endif
 
-# additional flags
-CFLAGS ?= $(LIBS) $(INCLUDES) -MMD -MP $(DEFINES)
+INCLUDES += $(addprefix -I,$(INC_DIRS))
+LIBS     += $(addprefix -L,$(LIB_DIRS))
+# combine all flags
+CFLAGS   ?= $(LIBS) $(INCLUDES) $(FLAGS) $(DEFINES)
 
+# targets
 all: $(TARGET)
 
 $(TARGET): $(OBJS)
@@ -47,6 +52,10 @@ $(TARGET): $(OBJS)
 $(BUILD_DIR)/%.o: %.c $(CONFIG_DIR)/config.mk $(VOLTMETER_YML) $(VOLTMETER_MK)
 	mkdir -p $(dir $@)
 	$(CC) -c $< -o $@ $(CFLAGS)
+
+# config
+$(VOLTMETER_MK):
+	$(MAKE) -C $(ROOT_DIR) $(VOLTMETER_MK)
 
 .PHONY: clean
 

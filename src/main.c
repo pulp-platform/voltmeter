@@ -66,7 +66,7 @@ static struct argp_option options[] = {
     {"mode", 'r', "MODE", 0, "Decide in which mode to run Voltmeter; MODE can be 'char', 'profile' 'num_passes'", 5},
     {"trace_dir", 't', "TRACE_DIR", 0, "Path to the directory where to store the trace files; only if mode == 'char' or 'profile'", 6},
     {"benchmark", 'b', "BENCHMARK_PATH", 0, "Path of benchmark compiled as a dynamic library; only if mode == 'char' or 'profile'", 7},
-    {"benchmark_args", 'a', "BENCHMARK_ARGS", 0, "Arguments to be passed to the benchmark; only if mode == 'char' or 'profile'", 8},
+    {"benchmark_args", 'a', "BENCHMARK_ARGS", 0, "Comma-separated arguments to be passed to the benchmark, in the same order; only if mode == 'char' or 'profile'", 8},
     {0}
 };
 
@@ -85,7 +85,8 @@ struct arguments {
   enum {NO_MODE, CHARACTERIZATION, PROFILE, NUM_PASSES} mode;
   char *trace_dir;
   char *benchmark;
-  char *benchmark_args;
+  char **benchmark_args;
+  unsigned int num_benchmark_args;
 };
 
 static error_t parse_opt(int key, char *arg, struct argp_state *state);
@@ -123,6 +124,7 @@ int main(int argc, char *argv[]) {
   arguments.trace_dir = NULL;
   arguments.benchmark = NULL;
   arguments.benchmark_args = NULL;
+  arguments.num_benchmark_args = 0;
   argp_parse(&argp, argc, argv, 0, 0, &arguments);
 
   // print all arguments parsed by argp
@@ -171,7 +173,10 @@ int main(int argc, char *argv[]) {
   if (arguments.mode == PROFILE){
     printf("trace_dir: %s\n", arguments.trace_dir);
     printf("benchmark: %s\n", arguments.benchmark);
-    printf("benchmark_args: %s\n", arguments.benchmark_args);
+    printf("benchmark_args: ");
+    for (int i = 1; i <= arguments.num_benchmark_args; i++)
+      printf("%s ", arguments.benchmark_args[i]);
+    printf("\n");
   }
   printf("═════════════════════════════════════\n\n");
 
@@ -338,14 +343,17 @@ int main(int argc, char *argv[]) {
     benchmark_args[num_benchmark_args] = NULL; // terminate argv[argc] should be NULL
 
     // run benchmark
-    printf("Running benchmark '%s' with %d arguments.\n", benchmark_name, num_benchmark_args);
+    arguments.benchmark_args[0] = benchmark_path; // assign argv[0]
+    printf("Running benchmark '%s' with %d arguments.\n", benchmark_name, arguments.num_benchmark_args);
     printf("Benchmark arguments:\n");
-    for (int i = 0; i < num_benchmark_args; i++)
-      printf("  argv[%d] = %s \n", i, benchmark_args[i]);
+    for (int i = 0; i <= arguments.num_benchmark_args + 1; i++)
+      printf("  argv[%d] = %s \n", i, arguments.benchmark_args[i]);
     printf("\n\n");
-    benchmark(num_benchmark_args, benchmark_args);
+    // benchmarks needs to return with 'return' and not 'exit'
+    benchmark(arguments.num_benchmark_args + 1, arguments.benchmark_args);
     // close benchmark
     dlclose(benchmark_handle);
+    printf("Benchmark '%s' finished.\n\n", benchmark_name);
   }
 
 /*
@@ -402,6 +410,10 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state){
         arguments->cli_cpu[arguments->num_cli_cpu] = atoi(token);
         arguments->num_cli_cpu++;
         arguments->cli_cpu = (cpu_event_t*)realloc(arguments->cli_cpu, (arguments->num_cli_cpu+1)*sizeof(cpu_event_t));
+        if (arguments->cli_cpu == NULL){
+          printf("%s:%d: realloc failed.\n", __FILE__, __LINE__);
+          exit(1);
+        }
         token = strtok(NULL, ",");
       }
       break;
@@ -418,6 +430,10 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state){
         arguments->cli_gpu[arguments->num_cli_gpu] = atoi(token);
         arguments->num_cli_gpu++;
         arguments->cli_gpu = (gpu_event_t*)realloc(arguments->cli_gpu, (arguments->num_cli_gpu+1)*sizeof(gpu_event_t));
+        if (arguments->cli_gpu == NULL){
+          printf("%s:%d: realloc failed.\n", __FILE__, __LINE__);
+          exit(1);
+        }
         token = strtok(NULL, ",");
       }
       break;
@@ -440,7 +456,29 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state){
       arguments->benchmark = arg;
       break;
     case 'a':
-      arguments->benchmark_args = arg;
+      // parse benchmark arguments into array of strings
+      arguments->num_benchmark_args = 0;
+      if (arg == NULL){
+        // handle if benchmark has no arguments: for argv[0] and NULL
+        arguments->benchmark_args = malloc(2 * sizeof(char*));
+        if (arguments->benchmark_args == NULL){
+          printf("%s:%d: failed to allocate memory.\n", __FILE__, __LINE__);
+          exit(1);
+        }
+      } else {
+        char *token = strtok(arg, ",");
+        while (token != NULL) {
+          arguments->num_benchmark_args++;
+          arguments->benchmark_args = realloc(arguments->benchmark_args, (arguments->num_benchmark_args + 2) * sizeof(char*));
+          if (arguments->benchmark_args == NULL){
+            printf("%s:%d: realloc failed.\n", __FILE__, __LINE__);
+            exit(1);
+          }
+          arguments->benchmark_args[arguments->num_benchmark_args] = token;
+          token = strtok(NULL, ",");
+        }
+      }
+      arguments->benchmark_args[arguments->num_benchmark_args+1] = NULL; // argv[argc] should be NULL
       break;
     case ARGP_KEY_END:
       // check event_source argument
@@ -479,7 +517,7 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state){
         if (arguments->trace_dir == NULL)
           argp_failure(state, 1, 0, "missing required argument for option --trace_dir. See --help for more information.");
         if (arguments->benchmark == NULL)
-          argp_failure(state, 1, 0, "missing required argument for option --benchmark_name. See --help for more information.");
+          argp_failure(state, 1, 0, "missing required argument for option --benchmark. See --help for more information.");
       }
       if (arguments->mode == NUM_PASSES){
         if (CPU)

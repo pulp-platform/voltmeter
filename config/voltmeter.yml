@@ -1,25 +1,35 @@
+# Voltmeter compilation parameters
 parameters:
-  # PLATFORM can be: jetson_agx_xavier
+  # PLATFORM can be: `jetson_agx_xavier`
   PLATFORM: jetson_agx_xavier
   # activate profiling for CPU/GPU
-  PROFILE_CPU: 0
+  PROFILE_CPU: 1
   PROFILE_GPU: 1
   # number of benchmark replay, for averaging
   NUM_RUN: 3
   # profiler sampling period (in microsec)
   SAMPLE_PERIOD_US: 100000
 
-# name: label for the benchmark
-# path: path to the benchmark compiled as shared library (-o *.so
-#       -fPIC -shared), absolute or relative to the project root
-# args: arguments to pass to the benchmark
-benchmarks:
-  - name: particle_finder
-    path: ../../workloads/rodinia/openmp/particlefilter/particle.so
-    args: -x 128 -y 128 -z 10 -np 100000
-  - name: gaussian
-    path: ../../workloads/rodinia/bin/test.so
-    args: -x 128 -y 128 -z 10 -np 100000
-  - name: lavamd
-    path: ../lavamd.test
-    args:
+# arguments for Voltmeter execution mode (see `install/voltmeter --help`)
+arguments:
+  events: config
+  config_cpu: ./config/events_cpu.json
+  config_gpu: ./config/events_gpu.json
+  cli_cpu:
+  cli_gpu:
+  mode: profile
+  trace_dir: ./traces
+  benchmarks:
+    # name: label for the benchmark
+    # path: path to the benchmark compiled as shared library (`-o *.so
+    #       -fPIC -shared`), absolute or relative to the project root
+    # args: arguments to pass to the benchmark
+    - name: backprop
+      path: ../workloads/rodinia/openmp/backprop/backprop.so
+      args: 250000
+    - name: backprop
+      path: ../workloads/rodinia/openmp/backprop/backprop.so
+      args: 65535
+    - name: particle_finder
+      path: ../workloads/rodinia/openmp/particlefilter/particle_filter.so
+      args: -x 128 -y 128 -z 10 -np 100000
