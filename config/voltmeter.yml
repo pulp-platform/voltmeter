@@ -1,10 +1,19 @@
-# Voltmeter compilation parameters
-parameters:
+# Copyright 2023 ETH Zurich and University of Bologna.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Author: Sergio Mazzola, ETH Zurich <smazzola@iis.ee.ethz.ch>
+
+# Voltmeter compilation parameters for target selection
+param-platform:
   # PLATFORM can be: `jetson_agx_xavier`
   PLATFORM: jetson_agx_xavier
   # activate profiling for CPU/GPU
   PROFILE_CPU: 1
   PROFILE_GPU: 1
+
+# Voltmeter compilation parameters for profiler settings
+param-profiler:
   # number of benchmark replay, for averaging
   NUM_RUN: 3
   # profiler sampling period (in microsec)
