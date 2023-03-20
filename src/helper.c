@@ -4,11 +4,13 @@
 //
 // Author: Sergio Mazzola, ETH Zurich <smazzola@iis.ee.ethz.ch>
 
-#include <helper.h>
+// standard includes
 #include <stdio.h>
 #include <string.h>
 #include <stdarg.h>
-
+// voltmeter libraries
+#include <helper.h>
+// third-party libraries
 #include <jsmn.h>
 
 // concatenate a path with a filename
@@ -21,8 +23,8 @@ int cat_path(char *path, char *filename, char *full_path) {
   return  sprintf(full_path, format_string, path, filename);
 }
 
+// strip path from filename and remove extension, if any
 char *path_basename(char *path) {
-  // strip path from filename and remove extension, if any
   char *base = strrchr(path, '/');
   if (base == NULL)
     base = path;
@@ -34,6 +36,7 @@ char *path_basename(char *path) {
   return base;
 }
 
+// parse a token from a json string into a variable (based on jsmn library)
 int jsmn_parse_token(const char *json_string, jsmntok_t *tok, const char *format, ...) {
   char temp[200];
   va_list args;

@@ -4,20 +4,44 @@
 //
 // Author: Sergio Mazzola, ETH Zurich <smazzola@iis.ee.ethz.ch>
 
-#include <stdint.h>
+// standard includes
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <string.h>
-#include <platform.h>
-#include <cpu.h>
-#include <helper.h>
-
+// third-party libraries
 #include <jsmn.h>
+#ifdef __JETSON_AGX_XAVIER
+#include <cuda_runtime_api.h>
+#include <cupti_events.h>
+#endif
+// voltmeter libraries
+#include <platform.h>
+#include <helper.h>
+#include <cpu.h>
+
+/*
+ * ╔═══════════════════════════════════════════════════════╗
+ * ║                      Prototypes                       ║
+ * ╚═══════════════════════════════════════════════════════╝
+ */
 
 static void print_cpu_events();
 static void free_events_config(cpu_events_config_t *events_config);
 
+/*
+ * ╔═══════════════════════════════════════════════════════╗
+ * ║                        Globals                        ║
+ * ╚═══════════════════════════════════════════════════════╝
+ */
+
 static cpu_events_freq_config_t cpu_events;
+
+/*
+ * ╔═══════════════════════════════════════════════════════╗
+ * ║                       Functions                       ║
+ * ╚═══════════════════════════════════════════════════════╝
+ */
 
 uint32_t setup_cpu() {
 #ifdef __JETSON_AGX_XAVIER
@@ -128,7 +152,7 @@ void parse_cpu_events_json(char *config_file, cpu_events_config_t *events_config
 
   // parse json string into tokens
   jsmn_init(&p);
-  ret = jsmn_parse(&p, str_json, strlen(str_json), t, 1500);
+  ret = jsmn_parse(&p, str_json, sz, t, 1500);
   if (ret < 0) {
       printf("%s:%d: failed to parse JSON '%s' (error %d).\n", __FILE__, __LINE__, config_file, ret);
       exit(1);
@@ -227,7 +251,7 @@ uint32_t get_cpu_freq(){
 #endif
 }
 
-// Clip CPU frequency to the closest available advertised frequency
+// clip CPU frequency to the closest available advertised frequency
 uint32_t clip_cpu_freq(uint32_t freq){
 #ifdef __JETSON_AGX_XAVIER
   // read a list of integers from a file
@@ -242,7 +266,7 @@ uint32_t clip_cpu_freq(uint32_t freq){
   while (fscanf(fp, "%d", &freq_read) != EOF) {
     avail_freqs = (uint32_t *)realloc(avail_freqs, (num_avail_freqs + 1) * sizeof(uint32_t));
     if (avail_freqs == NULL) {
-      printf("%s:%d: failed to allocate memory.\n", __FILE__, __LINE__);
+      printf("%s:%d: realloc failed.\n", __FILE__, __LINE__);
       exit(1);
     }
     // fetched in kHz, convert to Hz
@@ -264,6 +288,12 @@ uint32_t clip_cpu_freq(uint32_t freq){
 #error "Platform not supported."
 #endif
 }
+
+/*
+ * ╔═══════════════════════════════════════════════════════╗
+ * ║                   Static functions                    ║
+ * ╚═══════════════════════════════════════════════════════╝
+ */
 
 static void print_cpu_events(){
   printf("Profiling CPU events:\n");

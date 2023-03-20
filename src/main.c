@@ -16,16 +16,18 @@
 #error No supported devices have been specified.
 #endif
 
-// Includes
+// standard includes
 #include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <string.h>
 #include <argp.h>
+#include <pthread.h>
+#include <dlfcn.h>
+// voltmeter libraries
 #include <platform.h>
 #include <profiler.h>
 #include <helper.h>
-#include <dlfcn.h>
 #if CPU
 #include <cpu.h>
 #endif
@@ -39,9 +41,14 @@
  * ╚═══════════════════════════════════════════════════════╝
  */
 
-
 // Parameters
 #define TRACE_NAME_LEN 150
+
+/*
+ * ╔═══════════════════════════════════════════════════════╗
+ * ║                      Prototypes                       ║
+ * ╚═══════════════════════════════════════════════════════╝
+ */
 
 /*
  * ╔═══════════════════════════════════════════════════════╗
@@ -287,6 +294,9 @@ int main(int argc, char *argv[]) {
  */
 
   if (arguments.mode == CHARACTERIZATION || arguments.mode == PROFILE){
+    volatile int benchmark_complete = 0;
+    pthread_barrier_t profile_barrier;
+
 #if GPU
     if (arguments.mode == PROFILE)
       if (num_pass_gpu > 1) {
@@ -296,7 +306,9 @@ int main(int argc, char *argv[]) {
 #endif
 
     // setup profiler
-    //TODO
+    for (int c = 0; c < NUM_CORES_CPU; c++) {
+      printf("Initializing profiler thread for core %d...\n", c);
+    }
 
     // prepare benchmark
     void* benchmark_handle = dlopen(benchmark_path, RTLD_NOW | RTLD_LOCAL);
@@ -313,34 +325,6 @@ int main(int argc, char *argv[]) {
         printf("%s:%d: benchmark %s cannot be run.\n", __FILE__, __LINE__, benchmark_path);
         exit(1);
     }
-
-
-    // parse benchmark arguments into array of strings benchmark_args
-    int num_benchmark_args = 1;
-    char **benchmark_args = NULL;
-
-    if (arguments.benchmark_args == NULL){
-      // handle if benchmark has no arguments
-      benchmark_args = malloc(2 * sizeof(char*));
-      if (benchmark_args == NULL){
-        printf("%s:%d: failed to allocate memory.\n", __FILE__, __LINE__);
-        exit(1);
-      }
-    } else {
-      char *token = strtok(arguments.benchmark_args, " ");
-      while (token != NULL) {
-        num_benchmark_args++;
-        benchmark_args = realloc(benchmark_args, num_benchmark_args * sizeof(char*));
-        if (benchmark_args == NULL){
-          printf("%s:%d: failed to allocate memory.\n", __FILE__, __LINE__);
-          exit(1);
-        }
-        benchmark_args[num_benchmark_args - 1] = token;
-        token = strtok(NULL, " ");
-      }
-    }
-    benchmark_args[0] = benchmark_path;
-    benchmark_args[num_benchmark_args] = NULL; // terminate argv[argc] should be NULL
 
     // run benchmark
     arguments.benchmark_args[0] = benchmark_path; // assign argv[0]

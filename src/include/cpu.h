@@ -7,8 +7,16 @@
 #ifndef _CPU_H
 #define _CPU_H
 
-#include <platform.h>
+// standard includes
 #include <stdint.h>
+// voltmeter libraries
+#include <platform.h>
+
+/*
+ * ╔═══════════════════════════════════════════════════════╗
+ * ║                        Macros                         ║
+ * ╚═══════════════════════════════════════════════════════╝
+ */
 
 #ifdef __JETSON_AGX_XAVIER
   // files
@@ -21,6 +29,12 @@
 #else
   #error "Platform not supported."
 #endif
+
+/*
+ * ╔═══════════════════════════════════════════════════════╗
+ * ║                         Types                         ║
+ * ╚═══════════════════════════════════════════════════════╝
+ */
 
 typedef uint32_t cpu_event_t;
 
@@ -39,6 +53,12 @@ typedef struct {
   unsigned int num_freqs;
   cpu_events_freq_config_t *cpu_events_freq_config;
 } cpu_events_config_t;
+
+/*
+ * ╔═══════════════════════════════════════════════════════╗
+ * ║                     Declarations                      ║
+ * ╚═══════════════════════════════════════════════════════╝
+ */
 
 uint32_t setup_cpu();
 void deinit_cpu();

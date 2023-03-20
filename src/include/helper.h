@@ -7,6 +7,7 @@
 #ifndef _HELPER_H
 #define _HELPER_H
 
+// third-party libraries
 #include <jsmn.h>
 
 int cat_path(char *path, char *filename, char *full_path);

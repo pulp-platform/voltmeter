@@ -7,12 +7,21 @@
 #ifndef _GPU_H
 #define _GPU_H
 
-#include <platform.h>
+// standard includes
 #include <stdint.h>
+// third-party libraries
 #ifdef __JETSON_AGX_XAVIER
 #include <cuda_runtime_api.h>
 #include <cupti_events.h>
 #endif
+// voltmeter libraries
+#include <platform.h>
+
+/*
+ * ╔═══════════════════════════════════════════════════════╗
+ * ║                        Macros                         ║
+ * ╚═══════════════════════════════════════════════════════╝
+ */
 
 #ifdef __JETSON_AGX_XAVIER
   // files
@@ -39,6 +48,12 @@
   #error "Platform not supported."
 #endif
 
+/*
+ * ╔═══════════════════════════════════════════════════════╗
+ * ║                         Types                         ║
+ * ╚═══════════════════════════════════════════════════════╝
+ */
+
 #ifdef __JETSON_AGX_XAVIER
 typedef CUpti_EventID gpu_event_t;
 #else
@@ -58,6 +73,12 @@ typedef struct {
   unsigned int num_freqs;
   gpu_events_freq_config_t *gpu_events_freq_config;
 } gpu_events_config_t;
+
+/*
+ * ╔═══════════════════════════════════════════════════════╗
+ * ║                     Declarations                      ║
+ * ╚═══════════════════════════════════════════════════════╝
+ */
 
 uint32_t setup_gpu();
 void deinit_gpu();

@@ -4,18 +4,27 @@
 //
 // Author: Sergio Mazzola, ETH Zurich <smazzola@iis.ee.ethz.ch>
 
-#include <stdint.h>
+
+// standard includes
 #include <stdio.h>
 #include <stdlib.h>
-#include <gpu.h>
-#include <platform.h>
-#include <helper.h>
+#include <stdint.h>
+// third-party libraries
+#include <jsmn.h>
 #ifdef __JETSON_AGX_XAVIER
 #include <cuda_runtime_api.h>
 #include <cupti_events.h>
 #endif
+// voltmeter libraries
+#include <platform.h>
+#include <helper.h>
+#include <gpu.h>
 
-#include <jsmn.h>
+/*
+ * ╔═══════════════════════════════════════════════════════╗
+ * ║                      Prototypes                       ║
+ * ╚═══════════════════════════════════════════════════════╝
+ */
 
 static void print_gpu_events();
 static void free_events_config(gpu_events_config_t *events_config);
@@ -23,12 +32,24 @@ static void free_events_config(gpu_events_config_t *events_config);
 static uint32_t cupti_create_event_group_sets(CUpti_EventID *event_ids, int num_events_tot);
 #endif
 
+/*
+ * ╔═══════════════════════════════════════════════════════╗
+ * ║                        Globals                        ║
+ * ╚═══════════════════════════════════════════════════════╝
+ */
+
 static gpu_events_freq_config_t gpu_events;
 
 #ifdef __JETSON_AGX_XAVIER
 static CUdevice cu_device;
 static CUcontext cu_context;
 #endif
+
+/*
+ * ╔═══════════════════════════════════════════════════════╗
+ * ║                       Functions                       ║
+ * ╚═══════════════════════════════════════════════════════╝
+ */
 
 uint32_t setup_gpu(){
 #ifdef __JETSON_AGX_XAVIER
@@ -331,6 +352,12 @@ uint32_t clip_gpu_freq(uint32_t freq){
 #endif
 }
 
+/*
+ * ╔═══════════════════════════════════════════════════════╗
+ * ║                   Static functions                    ║
+ * ╚═══════════════════════════════════════════════════════╝
+ */
+
 static void print_gpu_events(){
   printf("Profiling GPU events:\n  ");
   for (int e = 0; e < gpu_events.num_events; e++) {
@@ -349,7 +376,6 @@ static void free_events_config(gpu_events_config_t *events_config){
 
 #ifdef __JETSON_AGX_XAVIER
 // CUPTI-specific functions
-
 static uint32_t cupti_create_event_group_sets(CUpti_EventID *event_ids, int num_events_tot){
   CUptiResult ret;
   size_t size;
@@ -360,5 +386,4 @@ static uint32_t cupti_create_event_group_sets(CUpti_EventID *event_ids, int num_
   printf("Number of CUPTI event group sets (required passes): %u\n", gpu_events.event_group_sets->numSets);
   return gpu_events.event_group_sets->numSets;
 }
-
 #endif
