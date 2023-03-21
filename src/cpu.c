@@ -3,6 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 // Author: Sergio Mazzola, ETH Zurich <smazzola@iis.ee.ethz.ch>
+//         Thomas Benz, ETH Zurich <tbenz@iis.ee.ethz.ch>
+//         Björn Forsberg
 
 // standard includes
 #include <stdio.h>
@@ -16,7 +18,6 @@
 #include <cupti_events.h>
 #endif
 // voltmeter libraries
-#include <platform.h>
 #include <helper.h>
 #include <cpu.h>
 
@@ -27,6 +28,7 @@
  */
 
 static void print_cpu_events();
+static void free_events_freq_config(cpu_events_freq_config_t *events_freq_config);
 static void free_events_config(cpu_events_config_t *events_config);
 
 /*
@@ -43,6 +45,12 @@ static cpu_events_freq_config_t cpu_events;
  * ╚═══════════════════════════════════════════════════════╝
  */
 
+/*
+ * ┌───────────────────────────────────────────────────────┐
+ * │                         Setup                         │
+ * └───────────────────────────────────────────────────────┘
+ */
+
 uint32_t setup_cpu() {
 #ifdef __JETSON_AGX_XAVIER
   // allocate NUM_CORES_CPU cpu_events_freq_config_t.core
@@ -56,9 +64,14 @@ uint32_t setup_cpu() {
   // for each core in cpu_events, allocate NUM_COUNTERS_CPU cpu_events.core.event
   for (int i = 0; i < NUM_CORES_CPU; i++) {
     // for the Jetson Xavier, the number of PMU counters is fixed
-    cpu_events.core[i].num_events_core = NUM_COUNTERS_CPU;
-    cpu_events.core[i].event = (cpu_event_t *)malloc(NUM_COUNTERS_CPU * sizeof(cpu_event_t));
-    if (cpu_events.core[i].event == NULL) {
+    cpu_events.core[i].num_counters_core = NUM_COUNTERS_CPU;
+    cpu_events.core[i].event_id = (cpu_event_id_t *)malloc(NUM_COUNTERS_CPU * sizeof(cpu_event_id_t));
+    if (cpu_events.core[i].event_id == NULL) {
+      printf("%s:%d: failed to allocate memory.\n", __FILE__, __LINE__);
+      exit(1);
+    }
+    cpu_events.core[i].counter = (cpu_counter_t *)malloc(NUM_COUNTERS_CPU * sizeof(cpu_counter_t));
+    if (cpu_events.core[i].counter == NULL) {
       printf("%s:%d: failed to allocate memory.\n", __FILE__, __LINE__);
       exit(1);
     }
@@ -72,18 +85,16 @@ uint32_t setup_cpu() {
 }
 
 void deinit_cpu(){
-#ifdef __JETSON_AGX_XAVIER
-  // free cpu_events.num_cores cpu_events.core
-  for (int i = 0; i < cpu_events.num_cores; i++) {
-    free(cpu_events.core[i].event);
-  }
-  free(cpu_events.core);
-#else
-#error "Platform not supported."
-#endif
+  free_events_freq_config(&cpu_events);
 }
 
-void cpu_events_from_cli(cpu_event_t *events, unsigned int num_events){
+/*
+ * ┌───────────────────────────────────────────────────────┐
+ * │                    Events parsing                     │
+ * └───────────────────────────────────────────────────────┘
+ */
+
+void cpu_events_from_cli(cpu_event_id_t *events, unsigned int num_events){
 #ifdef __JETSON_AGX_XAVIER
   // events are expected in the order:
   // core0_event0 core0_event1 core0_event2 core1_event0 core1_event1 ...
@@ -92,8 +103,8 @@ void cpu_events_from_cli(cpu_event_t *events, unsigned int num_events){
     exit(1);
   }
   for (int c = 0; c < cpu_events.num_cores; c++) {
-    for (int e = 0; e < cpu_events.core[c].num_events_core; e++) {
-      cpu_events.core[c].event[e] = events[c * NUM_COUNTERS_CPU + e];
+    for (int e = 0; e < cpu_events.core[c].num_counters_core; e++) {
+      cpu_events.core[c].event_id[e] = events[c * NUM_COUNTERS_CPU + e];
     }
   }
   print_cpu_events();
@@ -119,7 +130,7 @@ void cpu_events_from_config(char *config_file) {
   // set events
   for (int c = 0; c < NUM_CORES_CPU; c++) {
     for (int e = 0; e < NUM_COUNTERS_CPU; e++) {
-      cpu_events.core[c].event[e] = events_config.cpu_events_freq_config[f].core[c].event[e];
+      cpu_events.core[c].event_id[e] = events_config.cpu_events_freq_config[f].core[c].event_id[e];
     }
   }
   // de-init events_config
@@ -159,10 +170,10 @@ void parse_cpu_events_json(char *config_file, cpu_events_config_t *events_config
   }
 
   uint32_t frequency;
-  cpu_event_t event;
+  cpu_event_id_t event;
   unsigned int num_frequencies_json;
   unsigned int num_cores_json;
-  unsigned int num_events_core_json;
+  unsigned int num_counters_core_json;
 
   int i = 0;
   num_frequencies_json = t[i].size;
@@ -209,30 +220,104 @@ void parse_cpu_events_json(char *config_file, cpu_events_config_t *events_config
         printf("%s:%d: unexpected token type %d (expected JSMN_ARRAY).\n", __FILE__, __LINE__, t[i].type);
         exit(1);
       }
-      num_events_core_json = t[i].size;
+      num_counters_core_json = t[i].size;
       // allocate space for events
-      events_config->cpu_events_freq_config[f].core[c].num_events_core = num_events_core_json;
-      events_config->cpu_events_freq_config[f].core[c].event = (cpu_event_t *)malloc(num_events_core_json * sizeof(cpu_event_t));
-      if (events_config->cpu_events_freq_config[f].core[c].event == NULL) {
+      events_config->cpu_events_freq_config[f].core[c].counter = NULL;  // to prevent from Segmentation fault when freeing unused field
+      events_config->cpu_events_freq_config[f].core[c].num_counters_core = num_counters_core_json;
+      events_config->cpu_events_freq_config[f].core[c].event_id = (cpu_event_id_t *)malloc(num_counters_core_json * sizeof(cpu_event_id_t));
+      if (events_config->cpu_events_freq_config[f].core[c].event_id == NULL) {
         printf("%s:%d: failed to allocate memory.\n", __FILE__, __LINE__);
         exit(1);
       }
-      if (num_events_core_json != NUM_COUNTERS_CPU) {
-        printf("%s:%d: unexpected number of events %d per core(expected %d).\n", __FILE__, __LINE__, num_events_core_json, NUM_COUNTERS_CPU);
+      if (num_counters_core_json != NUM_COUNTERS_CPU) {
+        printf("%s:%d: unexpected number of events %d per core(expected %d).\n", __FILE__, __LINE__, num_counters_core_json, NUM_COUNTERS_CPU);
         exit(1);
       }
-      for (int e = 0; e < num_events_core_json; e++){
+      for (int e = 0; e < num_counters_core_json; e++){
         // events list
         if (t[++i].type != JSMN_PRIMITIVE) {
           printf("%s:%d: unexpected token type %d (expected JSMN_PRIMITIVE).\n", __FILE__, __LINE__, t[i].type);
           exit(1);
         }
         jsmn_parse_token(str_json, &t[i], "%d", &event);
-        events_config->cpu_events_freq_config[f].core[c].event[e] = event;
+        events_config->cpu_events_freq_config[f].core[c].event_id[e] = event;
       }
     }
   }
 }
+
+/*
+ * ┌───────────────────────────────────────────────────────┐
+ * │                      PMU driver                       │
+ * └───────────────────────────────────────────────────────┘
+ */
+
+void enable_pmu_cpu_core(unsigned int core_id) {
+#if defined(__GNUC__) && defined(__aarch64__) && defined(__JETSON_AGX_XAVIER)
+  cpu_event_id_t event[NUM_COUNTERS_CPU];
+
+  for (int i = 0; i < NUM_COUNTERS_CPU; i++)
+    event[i] = cpu_events.core[core_id].event_id[i] & ARMV8_PMEVTYPER_EVTCOUNT_MASK;
+
+  __asm__ __volatile__("isb");
+  // use counters 0-2
+  __asm__ __volatile__("msr pmevtyper0_el0, %0" : : "r" (event[0]));
+  __asm__ __volatile__("msr pmevtyper1_el0, %0" : : "r" (event[1]));
+  __asm__ __volatile__("msr pmevtyper2_el0, %0" : : "r" (event[2]));
+
+  // Performance Monitors Count Enable Set register bit 30:1 disable, 31,1 enable
+  uint32_t r = 0;
+  __asm__ __volatile__("mrs %0, pmcr_el0" : "=r" (r));
+  // clear counters
+  __asm__ __volatile__("msr pmcr_el0, %0" : : "r" (r|(1<<1)|(1<<2)));
+
+  __asm__ __volatile__("mrs %0, pmcntenset_el0" : "=r" (r));
+  __asm__ __volatile__("msr pmcntenset_el0, %0" : : "r" (r|111));
+#else
+#error "Unsupported platform/architecture/compiler".
+#endif
+}
+
+void disable_pmu_cpu_core() {
+#if defined(__GNUC__) && defined(__aarch64__) && defined(__JETSON_AGX_XAVIER)
+  // Performance Monitors Count Enable Set register: clear bit 0
+  uint32_t r = 0;
+
+  __asm__ __volatile__("mrs %0, pmcntenset_el0" : "=r" (r));
+  __asm__ __volatile__("msr pmcntenset_el0, %0" : : "r" (r && 0xfffffff8));
+#else
+#error "Unsupported platform/architecture/compiler".
+#endif
+}
+
+void read_counters_cpu_core(unsigned int core_id) {
+#if defined(__GNUC__) && defined(__aarch64__) && defined(__JETSON_AGX_XAVIER)
+  __asm__ __volatile__("mrs %0, pmccntr_el0"   : "=r" (cpu_events.core[core_id].counter_clk));
+  __asm__ __volatile__("mrs %0, pmevcntr0_el0" : "=r" (cpu_events.core[core_id].counter[0]));
+  __asm__ __volatile__("mrs %0, pmevcntr1_el0" : "=r" (cpu_events.core[core_id].counter[1]));
+  __asm__ __volatile__("mrs %0, pmevcntr2_el0" : "=r" (cpu_events.core[core_id].counter[2]));
+#else
+#error "Unsupported platform/architecture/compiler".
+#endif
+}
+
+void reset_counters_cpu_core() {
+#if defined(__GNUC__) && defined(__aarch64__) && defined(__JETSON_AGX_XAVIER)
+  // Performance Monitors Count Enable Set register
+  uint32_t r = 0;
+  __asm__ __volatile__("mrs %0, pmcr_el0" : "=r" (r));
+  // clear counters
+  __asm__ __volatile__("msr pmcr_el0, %0" : : "r" (r|(1<<1)|(1<<2)));
+#else
+#error "Unsupported platform/architecture/compiler".
+#endif
+}
+
+/*
+ * ┌───────────────────────────────────────────────────────┐
+ * │                   Helper functions                    │
+ * └───────────────────────────────────────────────────────┘
+ */
 
 uint32_t get_cpu_freq(){
 #ifdef __JETSON_AGX_XAVIER
@@ -299,19 +384,24 @@ static void print_cpu_events(){
   printf("Profiling CPU events:\n");
   for(int c = 0; c < cpu_events.num_cores; c++){
     printf("  [core %d] ", c);
-    for(int e = 0; e < cpu_events.core[c].num_events_core; e++){
-      printf("0x%02x ", cpu_events.core[c].event[e]);
+    for(int e = 0; e < cpu_events.core[c].num_counters_core; e++){
+      printf("0x%02x ", cpu_events.core[c].event_id[e]);
     }
     printf("\n");
   }
 }
 
+static void free_events_freq_config(cpu_events_freq_config_t *events_freq_config) {
+  for (int c = 0; c < events_freq_config->num_cores; c++) {
+    free(events_freq_config->core[c].event_id);
+    free(events_freq_config->core[c].counter);
+  }
+  free(events_freq_config->core);
+}
+
 static void free_events_config(cpu_events_config_t *events_config) {
   for (int f = 0; f < events_config->num_freqs; f++) {
-    for (int c = 0; c < events_config->cpu_events_freq_config[f].num_cores; c++) {
-      free(events_config->cpu_events_freq_config[f].core[c].event);
-    }
-    free(events_config->cpu_events_freq_config[f].core);
+    free_events_freq_config(&events_config->cpu_events_freq_config[f]);
   }
   free(events_config->cpu_events_freq_config);
 }
