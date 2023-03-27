@@ -1,3 +1,9 @@
+# Copyright 2023 ETH Zurich and University of Bologna.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Author: Sergio Mazzola, ETH Zurich <smazzola@iis.ee.ethz.ch>
+
 include ./config/config.mk
 
 all: voltmeter
@@ -15,7 +21,7 @@ voltmeter: $(VOLTMETER_MK)
 	$(MAKE) -C $(SRC_DIR) all
 
 # parse config
-$(VOLTMETER_MK): $(VOLTMETER_YML) $(SCRIPTS_DIR)/parse_config.py
+$(VOLTMETER_MK): $(VOLTMETER_YML) $(SCRIPTS_DIR)/parse_config.py $(SCRIPTS_DIR)/yml_schema.py
 	VOLTMETER_YML=$< VOLTMETER_MK=$@ $(SCRIPTS_DIR)/parse_config.py
 
 .PHONY: clean

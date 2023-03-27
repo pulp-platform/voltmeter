@@ -9,8 +9,8 @@ param-platform:
   # PLATFORM can be: `jetson_agx_xavier`
   PLATFORM: jetson_agx_xavier
   # activate profiling for CPU/GPU
-  PROFILE_CPU: 1
-  PROFILE_GPU: 1
+  PROFILE_CPU: True
+  PROFILE_GPU: True
 
 # Voltmeter compilation parameters for profiler settings
 param-profiler:
@@ -24,8 +24,8 @@ arguments:
   events: config
   config_cpu: ./config/events_cpu.json
   config_gpu: ./config/events_gpu.json
-  cli_cpu:
-  cli_gpu:
+  #cli_cpu:
+  #cli_gpu:
   mode: profile
   trace_dir: ./traces
   benchmarks:

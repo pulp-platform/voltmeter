@@ -12,13 +12,14 @@ SRC_DIR     := $(ROOT_DIR)/src
 SCRIPTS_DIR := $(ROOT_DIR)/scripts
 CONFIG_DIR  := $(ROOT_DIR)/config
 INSTALL_DIR := $(ROOT_DIR)/install
-TRACE_DIR   ?= $(ROOT_DIR)/trace
+TRACE_DIR   ?= $(ROOT_DIR)/traces
 
 # files
-VOLTMETER_YML := $(CONFIG_DIR)/voltmeter.yml
+VOLTMETER_YML := $(ROOT_DIR)/Voltmeter.yml
 VOLTMETER_MK  := $(CONFIG_DIR)/voltmeter.mk
 
 -include $(VOLTMETER_MK)
 
 # extension of files to lint with clang-format
+#TODO: implement check (clang lint or editorconfig)
 CLANG_FORMAT_EXT := c,h,C,H,cpp,hpp,cc,hh,c++,h++,cxx,hxx,cu
