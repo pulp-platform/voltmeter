@@ -14,8 +14,6 @@
 #include <cuda_runtime_api.h>
 #include <cupti_events.h>
 #endif
-// voltmeter libraries
-#include <platform.h>
 
 /*
  * ╔═══════════════════════════════════════════════════════╗
@@ -55,19 +53,28 @@
  */
 
 #ifdef __JETSON_AGX_XAVIER
-typedef CUpti_EventID gpu_event_t;
+typedef CUpti_EventID gpu_event_id_t;
+typedef uint64_t gpu_counter_t;
 #else
-typedef uint32_t gpu_event_t;
+#error "Platform not supported."
 #endif
 
+#ifdef __JETSON_AGX_XAVIER
 typedef struct {
   uint32_t frequency;
-  unsigned int num_events;
-  gpu_event_t *event;
-#ifdef __JETSON_AGX_XAVIER
+  unsigned int num_counters;
+  gpu_event_id_t *event_id;
+  gpu_counter_t *counter;
+  // CUPTI-specific stuff
   CUpti_EventGroupSets *event_group_sets;
-#endif
+  uint32_t *num_events_group;
+  uint32_t *num_instances_group;
+  size_t *sizes_event_ids_group;
+  size_t *sizes_counters_group;
+  CUpti_EventID **event_ids_buffer;
+  gpu_counter_t **counters_buffer;
 } gpu_events_freq_config_t;
+#endif
 
 typedef struct {
   unsigned int num_freqs;
@@ -80,14 +87,23 @@ typedef struct {
  * ╚═══════════════════════════════════════════════════════╝
  */
 
+// setup
 uint32_t setup_gpu();
 void deinit_gpu();
 
+// events parsing
 uint32_t gpu_events_all();
-uint32_t gpu_events_from_cli(gpu_event_t *events, unsigned int num_events);
+uint32_t gpu_events_from_cli(gpu_event_id_t *events, unsigned int num_events);
 uint32_t gpu_events_from_config(char *config_file);
 void parse_gpu_events_json(char *config_file, gpu_events_config_t *events_config);
 
+// performance monitoring unit driver
+void enable_pmu_gpu(unsigned int set_id);
+void disable_pmu_gpu();
+void read_counters_gpu(unsigned int set_id);
+void reset_counters_gpu();
+
+// helper functions
 uint32_t get_gpu_freq();
 uint32_t clip_gpu_freq(uint32_t freq);
 
