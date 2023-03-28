@@ -7,6 +7,9 @@
 #ifndef _PROFILER_H
 #define _PROFILER_H
 
+// standard includes
+#include <stdio.h>
+
 /*
  * ╔═══════════════════════════════════════════════════════╗
  * ║                        Macros                         ║
@@ -30,8 +33,19 @@
 
 // arguments for thread call
 typedef struct profiler_args {
-  unsigned int thread_num;
-  //TODO: Finish
-};
+  unsigned int thread_id;
+  FILE *trace_file;
+  volatile int *signal;
+  pthread_barrier_t *barrier;
+  unsigned int set_id_gpu;
+} profiler_args_t;
+
+/*
+ * ╔═══════════════════════════════════════════════════════╗
+ * ║                     Declarations                      ║
+ * ╚═══════════════════════════════════════════════════════╝
+ */
+
+void *events_profiler(void *args);
 
 #endif // _PROFILER_H

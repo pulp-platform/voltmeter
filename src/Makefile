@@ -22,7 +22,7 @@ INC_DIRS += $(shell find $(SRC_DIR) -path $(BUILD_DIR) -prune -o -type d -print)
 LIB_DIRS +=
 LIBS     += -ldl -lm
 # general flags
-FLAGS    += -MMD -MP
+FLAGS    += -MMD -MP -pthread -D_GNU_SOURCE
 # general defines
 DEFINES  += -DCPU=$(PROFILE_CPU) -DGPU=$(PROFILE_GPU)
 DEFINES  += -DNUM_RUN=$(NUM_RUN) -DSAMPLE_PERIOD_US=$(SAMPLE_PERIOD_US)

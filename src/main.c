@@ -23,7 +23,9 @@
 #include <string.h>
 #include <argp.h>
 #include <pthread.h>
+#include <unistd.h>
 #include <dlfcn.h>
+#include <sched.h>
 // voltmeter libraries
 #include <platform.h>
 #include <profiler.h>
@@ -81,12 +83,12 @@ struct arguments {
   enum {NO_EVENTS, ALL_EVENTS, CONFIG, CLI} event_source;
 #if CPU
   char *config_cpu;
-  cpu_event_t *cli_cpu;
+  cpu_event_id_t *cli_cpu;
   unsigned int num_cli_cpu;
 #endif
 #if GPU
   char *config_gpu;
-  gpu_event_t *cli_gpu;
+  gpu_event_id_t *cli_gpu;
   unsigned int num_cli_gpu;
 #endif
   enum {NO_MODE, CHARACTERIZATION, PROFILE, NUM_PASSES} mode;
@@ -100,7 +102,13 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state);
 
 static struct argp argp = {options, parse_opt, args_doc, doc};
 
+/*
+ * ╔═══════════════════════════════════════════════════════╗
+ * ║                        Extern                         ║
+ * ╚═══════════════════════════════════════════════════════╝
+ */
 
+extern cpu_events_freq_config_t cpu_events;
 /*
  * ╔═══════════════════════════════════════════════════════╗
  * ║                         Main                          ║
@@ -193,6 +201,7 @@ int main(int argc, char *argv[]) {
  * └───────────────────────────────────────────────────────┘
 */
 
+  setup_platform();
 #if CPU
   uint32_t cpu_freq = setup_cpu();
   printf("Current CPU frequency: %u Hz\n", cpu_freq);
@@ -208,6 +217,7 @@ int main(int argc, char *argv[]) {
  * └───────────────────────────────────────────────────────┘
  */
   FILE *trace_file;
+  char *trace_path;
   // strip path from arguments.benchmark
   char *benchmark_path = strdup(arguments.benchmark);
   char *benchmark_name = path_basename(arguments.benchmark);
@@ -225,7 +235,7 @@ int main(int argc, char *argv[]) {
 #endif
     sprintf(trace_name + strlen(trace_name), ".bin");
     // allocate memory for trace path
-    char *trace_path = malloc(strlen(arguments.trace_dir) + strlen(trace_name) + 10);
+    trace_path = malloc(strlen(arguments.trace_dir) + strlen(trace_name) + 10);
     if (trace_path == NULL){
       printf("%s:%d: failed to allocate memory.\n", __FILE__, __LINE__);
       exit(1);
@@ -246,6 +256,8 @@ int main(int argc, char *argv[]) {
  * │                     Setup events                      │
  * └───────────────────────────────────────────────────────┘
  */
+
+  // GPU events profiling may require multiple serial passes
   int num_pass_gpu; // number of benchmark reaplays required to profile desired events
 
   // event_source: all_events
@@ -294,8 +306,6 @@ int main(int argc, char *argv[]) {
  */
 
   if (arguments.mode == CHARACTERIZATION || arguments.mode == PROFILE){
-    volatile int benchmark_complete = 0;
-    pthread_barrier_t profile_barrier;
 
 #if GPU
     if (arguments.mode == PROFILE)
@@ -304,12 +314,6 @@ int main(int argc, char *argv[]) {
         exit(1);
       }
 #endif
-
-    // setup profiler
-    for (int c = 0; c < NUM_CORES_CPU; c++) {
-      printf("Initializing profiler thread for core %d...\n", c);
-    }
-
     // prepare benchmark
     void* benchmark_handle = dlopen(benchmark_path, RTLD_NOW | RTLD_LOCAL);
     if (!benchmark_handle) {
@@ -326,18 +330,102 @@ int main(int argc, char *argv[]) {
         exit(1);
     }
 
+    // setup profiler
+    profiler_args_t *profiler_args = NULL;
+    size_t num_profiler_threads = 0;
+    cpu_set_t cpu_set;
+    pthread_t *profiler_threads;
+    pthread_attr_t pthread_attr;
+    pthread_barrier_t profiler_barrier;
+    int ret = 0;
+    volatile int benchmark_complete = 0;
+
+    // allocate profiler_args
+#if CPU
+    num_profiler_threads = cpu_events.num_cores;
+#else
+    num_profiler_threads = 1;
+#endif
+    profiler_args = malloc(sizeof(profiler_args_t) * num_profiler_threads);
+    if (profiler_args == NULL){
+      printf("%s:%d: failed to allocate memory.\n", __FILE__, __LINE__);
+      exit(1);
+    }
+    profiler_threads = malloc(sizeof(pthread_t) * num_profiler_threads);
+    if (profiler_threads == NULL){
+      printf("%s:%d: failed to allocate memory.\n", __FILE__, __LINE__);
+      exit(1);
+    }
+    // init profiler thread(s) barrier
+    pthread_barrier_init(&profiler_barrier, NULL, num_profiler_threads);
+    // launch profiler thread(s)
+    printf("\n");
+    for (int t = 0; t < num_profiler_threads; t++) {
+      printf("Initializing profiler thread for core %d...\n", t);
+      // setup profiler arguments
+      profiler_args[t].thread_id = t;
+      profiler_args[t].trace_file = trace_file;
+      profiler_args[t].signal = &benchmark_complete;
+      profiler_args[t].barrier = &profiler_barrier;
+      //TODO: Manage set_id for GPU
+      profiler_args[t].set_id_gpu = 0;
+      // set up pthread
+      pthread_attr_init(&pthread_attr);
+      CPU_ZERO(&cpu_set);
+      CPU_SET(t, &cpu_set);
+      pthread_attr_setaffinity_np(&pthread_attr, sizeof(cpu_set_t), &cpu_set);
+      // create thread c limiting its affinity to only CPU c
+      ret = pthread_create(&profiler_threads[t], &pthread_attr, events_profiler, &profiler_args[t]);
+      if (ret != 0) {
+        perror("pthread_create");
+        printf("%s:%d: failed to create profiler thread.\n", __FILE__, __LINE__);
+        exit(1);
+      }
+    }
+
     // run benchmark
+    printf("\n");
     arguments.benchmark_args[0] = benchmark_path; // assign argv[0]
-    printf("Running benchmark '%s' with %d arguments.\n", benchmark_name, arguments.num_benchmark_args);
+    printf("Running benchmark '%s' with %d argument(s).\n", benchmark_name, arguments.num_benchmark_args);
     printf("Benchmark arguments:\n");
     for (int i = 0; i <= arguments.num_benchmark_args + 1; i++)
       printf("  argv[%d] = %s \n", i, arguments.benchmark_args[i]);
     printf("\n\n");
     // benchmarks needs to return with 'return' and not 'exit'
     benchmark(arguments.num_benchmark_args + 1, arguments.benchmark_args);
+    // signal profiler threads to stop
+    benchmark_complete = 1;
     // close benchmark
     dlclose(benchmark_handle);
+    // handle dl errors
+    char *error = dlerror();
+    if (error != NULL) {
+      fputs(error, stdout);
+      printf("\n");
+      printf("%s:%d: benchmark %s cannot be run.\n", __FILE__, __LINE__, benchmark_path);
+      exit(1);
+    }
+    //TODO: Required?
+    // wait for the benchmark on GPU to finish (1 task running on GPU at a time)
+    //cuCtxSynchronize();
+    //cudaDeviceSynchronize();
+
     printf("Benchmark '%s' finished.\n\n", benchmark_name);
+    // join profiler threads
+    for (int t = 0; t < num_profiler_threads; t++) {
+      ret = pthread_join(profiler_threads[t], NULL);
+      if (ret != 0) {
+        perror("pthread_join");
+        printf("%s:%d: failed to join profiler thread.\n", __FILE__, __LINE__);
+        exit(1);
+      }
+      printf("Profiler thread %d has ended.\n", t);
+    }
+    // free profiler_args
+    free(profiler_args);
+    free(profiler_threads);
+    // destroy profiler thread(s) barrier
+    pthread_barrier_destroy(&profiler_barrier);
   }
 
 /*
@@ -345,6 +433,8 @@ int main(int argc, char *argv[]) {
  * │                        De-init                        │
  * └───────────────────────────────────────────────────────┘
  */
+
+  deinit_platform();
   // free memory
 #if CPU
   free(arguments.cli_cpu);
@@ -356,6 +446,7 @@ int main(int argc, char *argv[]) {
   // close files
   if (arguments.mode == CHARACTERIZATION || arguments.mode == PROFILE)
     fclose(trace_file);
+    free(trace_path);
   return 0;
 }
 
@@ -387,13 +478,13 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state){
       arguments->config_cpu = arg;
       break;
     case 'l':
-      arguments->cli_cpu = (cpu_event_t*)malloc(sizeof(cpu_event_t));
+      arguments->cli_cpu = (cpu_event_id_t*)malloc(sizeof(cpu_event_id_t));
       arguments->num_cli_cpu = 0;
       token = strtok(arg, ",");
       while (token != NULL){
         arguments->cli_cpu[arguments->num_cli_cpu] = atoi(token);
         arguments->num_cli_cpu++;
-        arguments->cli_cpu = (cpu_event_t*)realloc(arguments->cli_cpu, (arguments->num_cli_cpu+1)*sizeof(cpu_event_t));
+        arguments->cli_cpu = (cpu_event_id_t*)realloc(arguments->cli_cpu, (arguments->num_cli_cpu+1)*sizeof(cpu_event_id_t));
         if (arguments->cli_cpu == NULL){
           printf("%s:%d: realloc failed.\n", __FILE__, __LINE__);
           exit(1);
@@ -407,13 +498,13 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state){
       arguments->config_gpu = arg;
       break;
     case 'm':
-      arguments->cli_gpu = (gpu_event_t*)malloc(sizeof(gpu_event_t));
+      arguments->cli_gpu = (gpu_event_id_t*)malloc(sizeof(gpu_event_id_t));
       arguments->num_cli_gpu = 0;
       token = strtok(arg, ",");
       while (token != NULL){
         arguments->cli_gpu[arguments->num_cli_gpu] = atoi(token);
         arguments->num_cli_gpu++;
-        arguments->cli_gpu = (gpu_event_t*)realloc(arguments->cli_gpu, (arguments->num_cli_gpu+1)*sizeof(gpu_event_t));
+        arguments->cli_gpu = (gpu_event_id_t*)realloc(arguments->cli_gpu, (arguments->num_cli_gpu+1)*sizeof(gpu_event_id_t));
         if (arguments->cli_gpu == NULL){
           printf("%s:%d: realloc failed.\n", __FILE__, __LINE__);
           exit(1);

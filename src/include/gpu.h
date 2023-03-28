@@ -9,6 +9,8 @@
 
 // standard includes
 #include <stdint.h>
+// voltmeter libraries
+#include <platform.h>
 // third-party libraries
 #ifdef __JETSON_AGX_XAVIER
 #include <cuda_runtime_api.h>
@@ -59,12 +61,13 @@ typedef uint64_t gpu_counter_t;
 #error "Platform not supported."
 #endif
 
-#ifdef __JETSON_AGX_XAVIER
 typedef struct {
   uint32_t frequency;
   unsigned int num_counters;
   gpu_event_id_t *event_id;
   gpu_counter_t *counter;
+  uint32_t freq_read;
+#ifdef __JETSON_AGX_XAVIER
   // CUPTI-specific stuff
   CUpti_EventGroupSets *event_group_sets;
   uint32_t *num_events_group;
@@ -73,8 +76,8 @@ typedef struct {
   size_t *sizes_counters_group;
   CUpti_EventID **event_ids_buffer;
   gpu_counter_t **counters_buffer;
-} gpu_events_freq_config_t;
 #endif
+} gpu_events_freq_config_t;
 
 typedef struct {
   unsigned int num_freqs;
@@ -102,6 +105,8 @@ void enable_pmu_gpu(unsigned int set_id);
 void disable_pmu_gpu();
 void read_counters_gpu(unsigned int set_id);
 void reset_counters_gpu();
+
+void read_gpu_freq();
 
 // helper functions
 uint32_t get_gpu_freq();

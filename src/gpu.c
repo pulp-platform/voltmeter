@@ -15,6 +15,7 @@
 #include <cupti_events.h>
 #endif
 // voltmeter libraries
+#include <platform.h>
 #include <helper.h>
 #include <gpu.h>
 
@@ -37,7 +38,7 @@ static uint32_t cupti_create_event_group_sets(CUpti_EventID *event_ids, int num_
  * ╚═══════════════════════════════════════════════════════╝
  */
 
-static gpu_events_freq_config_t gpu_events;
+gpu_events_freq_config_t gpu_events;
 
 #ifdef __JETSON_AGX_XAVIER
 static CUdevice cu_device;
@@ -219,7 +220,11 @@ uint32_t gpu_events_from_config(char *config_file){
   print_gpu_events();
   uint32_t num_sets = cupti_create_event_group_sets(events_config.gpu_events_freq_config[f].event_id, events_config.gpu_events_freq_config[f].num_counters);
   // free events_config
-  free_events_config(&events_config);
+  for (int f = 0; f < events_config.num_freqs; f++) {
+    free(events_config.gpu_events_freq_config[f].event_id);
+    free(events_config.gpu_events_freq_config[f].counter);
+  }
+  free(events_config.gpu_events_freq_config);
   return num_sets;
 }
 
@@ -392,6 +397,9 @@ void enable_pmu_gpu(unsigned int set_id) {
     ret = cuptiEventGroupEnable(group);
     CHECK_CUPTI_ERROR(ret, "cuptiEventGroupEnable");
   }
+
+  // do a first dummy read to reset counters and fill the IDs buffer
+  read_counters_gpu(set_id);
 #else
 #error "Unsupported platform/architecture/compiler".
 #endif
@@ -437,8 +445,8 @@ void read_counters_gpu(unsigned int set_id) {
       &num_event_ids
     );
     CHECK_CUPTI_ERROR(ret, "cuptiEventGroupReadAllEvents");
-    if (num_event_ids != gpu_events.num_events_group[g]) {
-      printf("%s:%d: number of read GPU events (%d) does not match number of events in group (%d).\n", __FILE__, __LINE__, num_event_ids, gpu_events.num_events_group[g]);
+    if (num_event_ids != (size_t)gpu_events.num_events_group[g]) {
+      printf("%s:%d: number of read GPU events (%lu) does not match number of events in group (%d).\n", __FILE__, __LINE__, num_event_ids, gpu_events.num_events_group[g]);
       exit(1);
     }
   }
@@ -454,6 +462,11 @@ void reset_counters_gpu() {
 #else
 #error "Unsupported platform/architecture/compiler".
 #endif
+}
+
+
+void read_gpu_freq() {
+  gpu_events.freq_read = get_gpu_freq();
 }
 
 /*

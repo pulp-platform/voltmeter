@@ -18,6 +18,7 @@
 #include <cupti_events.h>
 #endif
 // voltmeter libraries
+#include <platform.h>
 #include <helper.h>
 #include <cpu.h>
 
@@ -37,7 +38,7 @@ static void free_events_config(cpu_events_config_t *events_config);
  * ╚═══════════════════════════════════════════════════════╝
  */
 
-static cpu_events_freq_config_t cpu_events;
+cpu_events_freq_config_t cpu_events;
 
 /*
  * ╔═══════════════════════════════════════════════════════╗
@@ -313,6 +314,10 @@ void reset_counters_cpu_core() {
 #endif
 }
 
+void read_cpu_core_freq(unsigned int core_id) {
+  cpu_events.core[core_id].freq_read = get_cpu_core_freq(core_id);
+}
+
 /*
  * ┌───────────────────────────────────────────────────────┐
  * │                   Helper functions                    │
@@ -323,6 +328,25 @@ uint32_t get_cpu_freq(){
 #ifdef __JETSON_AGX_XAVIER
   uint32_t freq = 0;
   FILE *fp = fopen(CUR_FREQ_CPU_FILE, "r");
+  if (fp == NULL) {
+    printf("%s:%d: failed to open file '%s'.\n", __FILE__, __LINE__, CUR_FREQ_CPU_FILE);
+    exit(1);
+  }
+  fscanf(fp, "%d", &freq);
+  fclose(fp);
+  // fetched in kHz, convert to Hz
+  return freq * 1000;
+#else
+#error "Platform not supported."
+#endif
+}
+
+uint32_t get_cpu_core_freq(unsigned int core_id){
+#ifdef __JETSON_AGX_XAVIER
+  uint32_t freq = 0;
+  char freq_core_file[100];
+  sprintf(freq_core_file, CORE_FREQ_CPU_FILE, core_id);
+  FILE *fp = fopen(freq_core_file, "r");
   if (fp == NULL) {
     printf("%s:%d: failed to open file '%s'.\n", __FILE__, __LINE__, CUR_FREQ_CPU_FILE);
     exit(1);

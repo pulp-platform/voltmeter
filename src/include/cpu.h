@@ -11,6 +11,8 @@
 
 // standard includes
 #include <stdint.h>
+// voltmeter libraries
+#include <platform.h>
 
 /*
  * ╔═══════════════════════════════════════════════════════╗
@@ -52,18 +54,17 @@ typedef uint32_t cpu_counter_t;
 #error "Platform not supported."
 #endif
 
-#ifdef __JETSON_AGX_XAVIER
 typedef struct {
   // configurable PMU perf counters
   unsigned int num_counters_core;
   cpu_event_id_t *event_id;
   cpu_counter_t *counter;
+#ifdef __JETSON_AGX_XAVIER
   // ARM PMU clock cycles counter
   uint64_t counter_clk;
-} cpu_core_events_t;
-#else
-#error "Platform not supported."
 #endif
+  uint32_t freq_read;
+} cpu_core_events_t;
 
 typedef struct {
   uint32_t frequency;
@@ -97,8 +98,11 @@ void disable_pmu_cpu_core();
 void read_counters_cpu_core(unsigned int core_id);
 void reset_counters_cpu_core();
 
+void read_cpu_core_freq(unsigned int core_id);
+
 // helper functions
 uint32_t get_cpu_freq();
+uint32_t get_cpu_core_freq(unsigned int core_id);
 uint32_t clip_cpu_freq(uint32_t freq);
 
 #endif // _CPU_H
