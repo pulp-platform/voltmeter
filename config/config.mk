@@ -11,6 +11,7 @@ ROOT_DIR    := $(abspath $(shell git rev-parse --show-toplevel 2>/dev/null))
 SRC_DIR     := $(ROOT_DIR)/src
 SCRIPTS_DIR := $(ROOT_DIR)/scripts
 CONFIG_DIR  := $(ROOT_DIR)/config
+UTILS_DIR   := $(ROOT_DIR)/utils
 INSTALL_DIR := $(ROOT_DIR)/install
 TRACE_DIR   ?= $(ROOT_DIR)/traces
 
@@ -21,5 +22,5 @@ VOLTMETER_MK  := $(CONFIG_DIR)/voltmeter.mk
 -include $(VOLTMETER_MK)
 
 # extension of files to lint with clang-format
-#TODO: implement check (clang lint or editorconfig)
+#TODO: Implement check (with clang lint or editorconfig checker)
 CLANG_FORMAT_EXT := c,h,C,H,cpp,hpp,cc,hh,c++,h++,cxx,hxx,cu

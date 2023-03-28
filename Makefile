@@ -8,14 +8,15 @@ include ./config/config.mk
 
 all: voltmeter
 
-# run voltmeter
-run: voltmeter
+# run voltmeter (run with sudo)
+run: voltmeter kernelmod
+	@mkdir -p $(TRACE_DIR)
 	@while read benchmark; do \
 		echo $(INSTALL_DIR)/voltmeter $(VOLTMETER_ARGS) $$benchmark; \
-		$(INSTALL_DIR)/voltmeter $(VOLTMETER_ARGS) $$benchmark; \
+		$(INSTALL_DIR)/voltmeter $(VOLTMETER_ARGS) $$benchmark || exit 1; \
 	done <<< $(BENCHMARKS)
 
-# compile voltmeter
+# compile voltmeter (run without sudo)
 voltmeter: $(VOLTMETER_MK)
 	mkdir -p $(INSTALL_DIR)
 	$(MAKE) -C $(SRC_DIR) all
@@ -24,9 +25,17 @@ voltmeter: $(VOLTMETER_MK)
 $(VOLTMETER_MK): $(VOLTMETER_YML) $(SCRIPTS_DIR)/parse_config.py $(SCRIPTS_DIR)/yml_schema.py
 	VOLTMETER_YML=$< VOLTMETER_MK=$@ $(SCRIPTS_DIR)/parse_config.py
 
-.PHONY: clean
+# install kernel module for Carmel CPU counters profiling (NVIDIA Jetson)
+kernelmod:
+	sudo $(MAKE) -C $(UTILS_DIR)/carmel-module install
+
+.PHONY: clean clean_traces
 
 clean:
-	$(MAKE) -C $(SRC_DIR) clean
+	sudo $(MAKE) -C $(SRC_DIR) clean
+	sudo $(MAKE) -C $(UTILS_DIR)/carmel-module clean
 	$(RM) $(VOLTMETER_MK)
-	$(RM) -r $(TRACE_DIR)
+	$(RM) -r $(INSTALL_DIR)
+
+clean_traces:
+	sudo $(RM) -r $(TRACE_DIR)
