@@ -9,7 +9,6 @@ SHELL = /bin/bash
 # directories
 ROOT_DIR    := $(abspath $(shell git rev-parse --show-toplevel 2>/dev/null))
 SRC_DIR     := $(ROOT_DIR)/src
-SCRIPTS_DIR := $(ROOT_DIR)/scripts
 CONFIG_DIR  := $(ROOT_DIR)/config
 UTILS_DIR   := $(ROOT_DIR)/utils
 INSTALL_DIR := $(ROOT_DIR)/install

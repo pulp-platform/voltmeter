@@ -22,8 +22,8 @@ voltmeter: $(VOLTMETER_MK)
 	$(MAKE) -C $(SRC_DIR) all
 
 # parse config
-$(VOLTMETER_MK): $(VOLTMETER_YML) $(SCRIPTS_DIR)/parse_config.py $(SCRIPTS_DIR)/yml_schema.py
-	VOLTMETER_YML=$< VOLTMETER_MK=$@ $(SCRIPTS_DIR)/parse_config.py
+$(VOLTMETER_MK): $(VOLTMETER_YML) $(UTILS_DIR)/parse_config/parse_config.py $(UTILS_DIR)/parse_config/yml_schema.py
+	VOLTMETER_YML=$< VOLTMETER_MK=$@ $(UTILS_DIR)/parse_config/parse_config.py
 
 # install kernel module for Carmel CPU counters profiling (NVIDIA Jetson)
 kernelmod:
@@ -34,8 +34,8 @@ kernelmod:
 clean:
 	sudo $(MAKE) -C $(SRC_DIR) clean
 	sudo $(MAKE) -C $(UTILS_DIR)/carmel-module clean
-	$(RM) $(VOLTMETER_MK)
 	$(RM) -r $(INSTALL_DIR)
+	$(RM) $(VOLTMETER_MK)
 
 clean_traces:
 	sudo $(RM) -r $(TRACE_DIR)
