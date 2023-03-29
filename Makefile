@@ -11,7 +11,8 @@ all: voltmeter
 # run voltmeter (run with sudo)
 run: voltmeter kernelmod
 	@mkdir -p $(TRACE_DIR)
-	@while read benchmark; do \
+	@cd $(INSTALL_DIR); \
+	while read benchmark; do \
 		echo $(INSTALL_DIR)/voltmeter $(VOLTMETER_ARGS) $$benchmark; \
 		$(INSTALL_DIR)/voltmeter $(VOLTMETER_ARGS) $$benchmark || exit 1; \
 	done <<< $(BENCHMARKS)

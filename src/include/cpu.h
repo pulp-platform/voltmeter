@@ -55,10 +55,15 @@ typedef uint32_t cpu_counter_t;
 #endif
 
 typedef struct {
-  // configurable PMU perf counters
-  unsigned int num_counters_core;
+  unsigned int num_counters;
   cpu_event_id_t *event_id;
   cpu_counter_t *counter;
+} cpu_counter_set_t;
+
+typedef struct {
+  // configurable PMU perf counters
+  unsigned int num_sets;
+  cpu_counter_set_t *counter_set;
 #ifdef __JETSON_AGX_XAVIER
   // ARM PMU clock cycles counter
   uint64_t counter_clk;
@@ -88,14 +93,15 @@ uint32_t setup_cpu(FILE *log_file);
 void deinit_cpu();
 
 // events parsing
-void cpu_events_from_cli(cpu_event_id_t *events, unsigned int num_events, FILE *log_file);
-void cpu_events_from_config(char *config_file, FILE *log_file);
+unsigned int cpu_events_all(FILE *log_file);
+unsigned int cpu_events_from_cli(cpu_event_id_t *events, unsigned int num_events, FILE *log_file);
+unsigned int cpu_events_from_config(char *config_file, FILE *log_file);
 void parse_cpu_events_json(char *config_file, cpu_events_config_t *events_config);
 
 // performance monitoring unit driver
-void enable_pmu_cpu_core(unsigned int core_id);
+void enable_pmu_cpu_core(unsigned int core_id, unsigned int set_id);
 void disable_pmu_cpu_core();
-void read_counters_cpu_core(unsigned int core_id);
+void read_counters_cpu_core(unsigned int core_id, unsigned int set_id);
 void reset_counters_cpu_core();
 
 void read_cpu_core_freq(unsigned int core_id);
@@ -104,5 +110,7 @@ void read_cpu_core_freq(unsigned int core_id);
 uint32_t get_cpu_freq();
 uint32_t get_cpu_core_freq(unsigned int core_id);
 uint32_t clip_cpu_freq(uint32_t freq);
+void print_cpu_events(FILE *log_file);
+void print_cpu_events_set(FILE *log_file, unsigned int set_id);
 
 #endif // _CPU_H

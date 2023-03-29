@@ -39,6 +39,7 @@ typedef struct profiler_args {
   FILE *trace_file;
   volatile int *signal;
   pthread_barrier_t *barrier;
+  unsigned int set_id_cpu;
   unsigned int set_id_gpu;
 } profiler_args_t;
 

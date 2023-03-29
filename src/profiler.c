@@ -48,7 +48,7 @@ void *events_profiler(void *args) {
 
 #if CPU
   // enable CPU PMU
-  enable_pmu_cpu_core(thread_args->thread_id);
+  enable_pmu_cpu_core(thread_args->thread_id, thread_args->set_id_cpu);
 #endif
 #if GPU
   // enable GPU PMU (only CPU thread 0 is the GPU host)
@@ -61,8 +61,8 @@ void *events_profiler(void *args) {
 #if CPU
     fwrite(&cpu_events.num_cores, sizeof(uint32_t), 1, thread_args->trace_file);
     for (int c = 0; c < cpu_events.num_cores; c++) {
-      fwrite(&cpu_events.core[c].num_counters_core, sizeof(uint32_t), 1, thread_args->trace_file);
-      fwrite(cpu_events.core[c].event_id, sizeof(cpu_event_id_t) * cpu_events.core[c].num_counters_core, 1, thread_args->trace_file);
+      fwrite(&cpu_events.core[c].counter_set[thread_args->set_id_cpu].num_counters, sizeof(uint32_t), 1, thread_args->trace_file);
+      fwrite(cpu_events.core[c].counter_set[thread_args->set_id_cpu].event_id, sizeof(cpu_event_id_t) * cpu_events.core[c].counter_set[thread_args->set_id_cpu].num_counters, 1, thread_args->trace_file);
     }
 #endif
 #if GPU
@@ -94,7 +94,7 @@ void *events_profiler(void *args) {
 
 #if CPU
     // sample CPU counters
-    read_counters_cpu_core(thread_args->thread_id);
+    read_counters_cpu_core(thread_args->thread_id, thread_args->set_id_cpu);
     reset_counters_cpu_core();
     // sample current CPU frequency
     read_cpu_core_freq(thread_args->thread_id);
@@ -121,7 +121,7 @@ void *events_profiler(void *args) {
       // per each core: CPU freq, CPU counter values
       for(int c = 0; c < cpu_events.num_cores; c++) {
         fwrite(&cpu_events.core[c].freq_read, sizeof(uint32_t), 1, thread_args->trace_file);
-        fwrite(cpu_events.core[c].counter, sizeof(cpu_counter_t), cpu_events.core[c].num_counters_core, thread_args->trace_file);
+        fwrite(cpu_events.core[c].counter_set[thread_args->set_id_cpu].counter, sizeof(cpu_counter_t), cpu_events.core[c].counter_set[thread_args->set_id_cpu].num_counters, thread_args->trace_file);
 #ifdef __JETSON_AGX_XAVIER
         fwrite(&cpu_events.core[c].counter_clk, sizeof(uint64_t), 1, thread_args->trace_file);
 #endif
@@ -166,7 +166,7 @@ void *events_profiler(void *args) {
 #if GPU
   if (thread_args->thread_id == 0) {
     // de-init GPU PMU
-    disable_pmu_gpu();
+    disable_pmu_gpu(thread_args->set_id_gpu);
   }
 #endif
 }

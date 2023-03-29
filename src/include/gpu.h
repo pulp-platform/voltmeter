@@ -102,7 +102,7 @@ void parse_gpu_events_json(char *config_file, gpu_events_config_t *events_config
 
 // performance monitoring unit driver
 void enable_pmu_gpu(unsigned int set_id);
-void disable_pmu_gpu();
+void disable_pmu_gpu(unsigned int set_id);
 void read_counters_gpu(unsigned int set_id);
 void reset_counters_gpu();
 
@@ -111,6 +111,8 @@ void read_gpu_freq();
 // helper functions
 uint32_t get_gpu_freq();
 uint32_t clip_gpu_freq(uint32_t freq);
+void print_gpu_events(FILE *log_file);
+void print_gpu_events_set(FILE *log_file, uint32_t set_id);
 void sync_gpu_slave();
 
 #endif // _GPU_H
