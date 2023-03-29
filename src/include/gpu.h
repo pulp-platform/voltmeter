@@ -91,13 +91,13 @@ typedef struct {
  */
 
 // setup
-uint32_t setup_gpu();
+uint32_t setup_gpu(FILE *log_file);
 void deinit_gpu();
 
 // events parsing
-uint32_t gpu_events_all();
-uint32_t gpu_events_from_cli(gpu_event_id_t *events, unsigned int num_events);
-uint32_t gpu_events_from_config(char *config_file);
+uint32_t gpu_events_all(FILE *log_file);
+uint32_t gpu_events_from_cli(gpu_event_id_t *events, unsigned int num_events, FILE *log_file);
+uint32_t gpu_events_from_config(char *config_file, FILE *log_file);
 void parse_gpu_events_json(char *config_file, gpu_events_config_t *events_config);
 
 // performance monitoring unit driver

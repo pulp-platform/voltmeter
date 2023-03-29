@@ -25,11 +25,11 @@
  * ╚═══════════════════════════════════════════════════════╝
  */
 
-static void print_gpu_events();
+static void print_gpu_events(FILE *log_file);
 static void free_events_freq_config(gpu_events_freq_config_t *events_freq_config);
 static void free_events_config(gpu_events_config_t *events_config);
 #ifdef __JETSON_AGX_XAVIER
-static uint32_t cupti_create_event_group_sets(CUpti_EventID *event_ids, int num_events_tot);
+static uint32_t cupti_create_event_group_sets(CUpti_EventID *event_ids, int num_events_tot, FILE *log_file);
 #endif
 
 /*
@@ -57,7 +57,7 @@ static CUcontext cu_context;
  * └───────────────────────────────────────────────────────┘
  */
 
-uint32_t setup_gpu(){
+uint32_t setup_gpu(FILE *log_file){
 #ifdef __JETSON_AGX_XAVIER
   CUresult ret_cuda;
   int cuda_device_count;
@@ -73,12 +73,12 @@ uint32_t setup_gpu(){
       exit(1);
   }
   // statically select device CUDA_DEV_NUM
-  printf("CUDA device number: %d\n", CUDA_DEV_NUM);
+  printf_file(log_file, "CUDA device number: %d\n", CUDA_DEV_NUM);
   ret_cuda = cuDeviceGet(&cu_device, CUDA_DEV_NUM);
   CHECK_CU_ERROR(ret_cuda, "cuDeviceGet");
   ret_cuda = cuDeviceGetName(cuda_device_name, 50, cu_device);
   CHECK_CU_ERROR(ret_cuda, "cuDeviceGetName");
-  printf("CUDA device name: %s\n", cuda_device_name);
+  printf_file(log_file, "CUDA device name: %s\n", cuda_device_name);
   // create context for this GPU
   ret_cuda = cuCtxCreate(&cu_context, 0, cu_device);
   CHECK_CU_ERROR(ret_cuda, "cuCtxCreate");
@@ -107,7 +107,7 @@ void deinit_gpu(){
  * └───────────────────────────────────────────────────────┘
  */
 
-uint32_t gpu_events_all(){
+uint32_t gpu_events_all(FILE *log_file){
 #ifdef __JETSON_AGX_XAVIER
   CUptiResult ret;
   size_t size;
@@ -162,9 +162,9 @@ uint32_t gpu_events_all(){
     event_array_ptr += num_domain_events[d];
   }
 
-  printf("Total number of exposed GPU events: %u\n", num_events_tot);
+  printf_file(log_file, "Total number of exposed GPU events: %u\n", num_events_tot);
   // create CUPTI event group sets (i.e., sets of CUPTI event groups)
-  uint32_t num_sets = cupti_create_event_group_sets(event_ids, num_events_tot);
+  uint32_t num_sets = cupti_create_event_group_sets(event_ids, num_events_tot, log_file);
   gpu_events.event_id = event_ids;
   gpu_events.num_counters = num_events_tot;
   // de-init
@@ -176,7 +176,7 @@ uint32_t gpu_events_all(){
 #endif
 }
 
-uint32_t gpu_events_from_cli(gpu_event_id_t *events, unsigned int num_events){
+uint32_t gpu_events_from_cli(gpu_event_id_t *events, unsigned int num_events, FILE *log_file){
 #ifdef __JETSON_AGX_XAVIER
   gpu_events.num_counters = num_events;
   gpu_events.event_id = (gpu_event_id_t *)malloc(num_events * sizeof(gpu_event_id_t));
@@ -188,15 +188,15 @@ uint32_t gpu_events_from_cli(gpu_event_id_t *events, unsigned int num_events){
     gpu_events.event_id[i] = events[i];
   }
   // create CUPTI event group sets (i.e., sets of CUPTI event groups)
-  print_gpu_events();
-  uint32_t num_sets = cupti_create_event_group_sets(events, num_events);
+  print_gpu_events(log_file);
+  uint32_t num_sets = cupti_create_event_group_sets(events, num_events, log_file);
   return num_sets;
 #else
 #error "Platform not supported."
 #endif
 }
 
-uint32_t gpu_events_from_config(char *config_file){
+uint32_t gpu_events_from_config(char *config_file, FILE *log_file){
   gpu_events_config_t events_config;
   parse_gpu_events_json(config_file, &events_config);
 
@@ -217,8 +217,8 @@ uint32_t gpu_events_from_config(char *config_file){
     gpu_events.event_id[e] = events_config.gpu_events_freq_config[f].event_id[e];
   }
   // create CUPTI event group sets (i.e., sets of CUPTI event groups)
-  print_gpu_events();
-  uint32_t num_sets = cupti_create_event_group_sets(events_config.gpu_events_freq_config[f].event_id, events_config.gpu_events_freq_config[f].num_counters);
+  print_gpu_events(log_file);
+  uint32_t num_sets = cupti_create_event_group_sets(events_config.gpu_events_freq_config[f].event_id, events_config.gpu_events_freq_config[f].num_counters, log_file);
   // free events_config
   for (int f = 0; f < events_config.num_freqs; f++) {
     free(events_config.gpu_events_freq_config[f].event_id);
@@ -546,12 +546,12 @@ void sync_gpu_slave() {
  * ╚═══════════════════════════════════════════════════════╝
  */
 
-static void print_gpu_events(){
-  printf("Profiling GPU events:\n ");
+static void print_gpu_events(FILE *log_file){
+  printf_file(log_file, "Profiling GPU events:\n ");
   for (int e = 0; e < gpu_events.num_counters; e++) {
-    printf("%u ", gpu_events.event_id[e]);
+    printf_file(log_file, "%u ", gpu_events.event_id[e]);
   }
-  printf("\n");
+  printf_file(log_file, "\n");
 }
 
 static void free_events_freq_config(gpu_events_freq_config_t *events_freq_config){
@@ -576,14 +576,14 @@ static void free_events_config(gpu_events_config_t *events_config){
 #ifdef __JETSON_AGX_XAVIER
 // CUPTI-specific functions
 
-static uint32_t cupti_create_event_group_sets(CUpti_EventID *event_ids, int num_events_tot){
+static uint32_t cupti_create_event_group_sets(CUpti_EventID *event_ids, int num_events_tot, FILE *log_file){
   CUptiResult ret;
   size_t size;
   size = sizeof(CUpti_EventID) * num_events_tot;
   ret = cuptiEventGroupSetsCreate(cu_context, size, event_ids, &gpu_events.event_group_sets);
   CHECK_CUPTI_ERROR(ret, "cuptiEventGroupSetsCreate");
   // return number of requires passes to profile all contained events
-  printf("Number of CUPTI event group sets (required passes): %u\n", gpu_events.event_group_sets->numSets);
+  printf_file(log_file, "Number of CUPTI event group sets (required passes): %u\n", gpu_events.event_group_sets->numSets);
   return gpu_events.event_group_sets->numSets;
 }
 

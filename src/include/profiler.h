@@ -25,6 +25,8 @@
 #define SAMPLE_PERIOD_US 100000
 #endif
 
+#define LOG_FILE_NAME "voltmeter"
+
 /*
  * ╔═══════════════════════════════════════════════════════╗
  * ║                         Types                         ║

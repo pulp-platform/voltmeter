@@ -19,5 +19,6 @@
 int cat_path(char *path, char *filename, char *full_path);
 char *path_basename(char *path);
 int jsmn_parse_token(const char *json_string, jsmntok_t *tok, const char *format, ...);
+int printf_file(FILE *file, const char *format, ...);
 
 #endif // _HELPER_H

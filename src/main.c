@@ -127,58 +127,90 @@ int main(int argc, char *argv[]) {
   arguments.num_benchmark_args = 0;
   argp_parse(&argp, argc, argv, 0, 0, &arguments);
 
+/*
+ * ┌───────────────────────────────────────────────────────┐
+ * │                          Log                          │
+ * └───────────────────────────────────────────────────────┘
+ */
+
+  unsigned int log_i = 0;
+  char log_file_name[50] = {'\0'};
+  char *log_file_path = NULL;
+  do {
+    if (log_i)
+      sprintf(log_file_name, "%s_%u.log", LOG_FILE_NAME, log_i); // add suffix if != 0
+    else
+      sprintf(log_file_name, "%s.log", LOG_FILE_NAME);
+    // allocate memory for trace path
+    log_file_path = realloc(log_file_path, strlen(arguments.trace_dir) + strlen(log_file_name) + 10);
+    if (log_file_path == NULL){
+      printf("%s:%d: failed to allocate memory.\n", __FILE__, __LINE__);
+      exit(1);
+    }
+    // join trace_dir and trace_name
+    cat_path(arguments.trace_dir, log_file_name, log_file_path);
+    log_i++;
+  } while(access(log_file_path, F_OK) != -1);
+
+  FILE *log_file = fopen(log_file_path, "w");
+  if (log_file == NULL) {
+    printf("%s:%d: failed to open log file.\n", __FILE__, __LINE__);
+    exit(1);
+  }
+  free(log_file_path);
+
   // print all arguments parsed by argp
-  printf("\n════════════════════════════════════════════════════════════════════════════════\n");
-  printf("                                   Voltmeter                                    \n");
-  printf("────────────────────────────────────────────────────────────────────────────────\n");
-  printf("Supported devices: ");
+  printf_file(log_file, "\n════════════════════════════════════════════════════════════════════════════════\n");
+  printf_file(log_file, "                                   Voltmeter                                    \n");
+  printf_file(log_file, "────────────────────────────────────────────────────────────────────────────────\n");
+  printf_file(log_file, " Supported devices: ");
   if (CPU)
-    printf("CPU ");
+    printf_file(log_file, "CPU ");
   if (GPU)
-    printf("GPU");
-  printf("\n");
+    printf_file(log_file, "GPU");
+  printf_file(log_file, "\n");
   if (arguments.event_source == ALL_EVENTS)
-    printf("event_source: all_events\n");
+    printf_file(log_file, " event_source: all_events\n");
   else if (arguments.event_source == CONFIG)
-    printf("event_source: config\n");
+    printf_file(log_file, " event_source: config\n");
   else if (arguments.event_source == CLI)
-    printf("event_source: cli\n");
+    printf_file(log_file, " event_source: cli\n");
   if (arguments.event_source == CONFIG) {
 #if CPU
-    printf("config_cpu: %s\n", arguments.config_cpu);
+    printf_file(log_file, " config_cpu: %s\n", arguments.config_cpu);
 #endif
 #if GPU
-    printf("config_gpu: %s\n", arguments.config_gpu);
+    printf_file(log_file, " config_gpu: %s\n", arguments.config_gpu);
 #endif
   } else if (arguments.event_source == CLI) {
 #if CPU
-    printf("cli_cpu: ");
+    printf_file(log_file, " cli_cpu: ");
     for (int i = 0; i < arguments.num_cli_cpu; i++)
-      printf("%u ", arguments.cli_cpu[i]);
-    printf("\n");
+      printf_file(log_file, "%u ", arguments.cli_cpu[i]);
+    printf_file(log_file, "\n");
 #endif
 #if GPU
-    printf("cli_gpu: ");
+    printf_file(log_file, " cli_gpu: ");
     for (int i = 0; i < arguments.num_cli_gpu; i++)
-      printf("%u ", arguments.cli_gpu[i]);
-    printf("\n");
+      printf_file(log_file, "%u ", arguments.cli_gpu[i]);
+    printf_file(log_file, "\n");
 #endif
   }
   if (arguments.mode == CHARACTERIZATION)
-    printf("mode: characterization\n");
+    printf_file(log_file, " mode: characterization\n");
   else if (arguments.mode == PROFILE)
-    printf("mode: profile\n");
+    printf_file(log_file, " mode: profile\n");
   else if (arguments.mode == NUM_PASSES)
-    printf("mode: num_passes\n");
+    printf_file(log_file, " mode: num_passes\n");
   if (arguments.mode == PROFILE){
-    printf("trace_dir: %s\n", arguments.trace_dir);
-    printf("benchmark: %s\n", arguments.benchmark);
-    printf("benchmark_args: ");
+    printf_file(log_file, " trace_dir: %s\n", arguments.trace_dir);
+    printf_file(log_file, " benchmark: %s\n", arguments.benchmark);
+    printf_file(log_file, " benchmark_args: ");
     for (int i = 1; i <= arguments.num_benchmark_args; i++)
-      printf("%s ", arguments.benchmark_args[i]);
-    printf("\n");
+      printf_file(log_file, "%s ", arguments.benchmark_args[i]);
+    printf_file(log_file, "\n");
   }
-  printf("════════════════════════════════════════════════════════════════════════════════\n\n");
+  printf_file(log_file, "════════════════════════════════════════════════════════════════════════════════\n\n");
 
 /*
  * ┌───────────────────────────────────────────────────────┐
@@ -188,12 +220,12 @@ int main(int argc, char *argv[]) {
 
   setup_platform();
 #if CPU
-  uint32_t cpu_freq = setup_cpu();
-  printf("Current CPU frequency: %u Hz\n", cpu_freq);
+  uint32_t cpu_freq = setup_cpu(log_file);
+  printf_file(log_file, "Current CPU frequency: %u Hz\n", cpu_freq);
 #endif
 #if GPU
-  uint32_t gpu_freq = setup_gpu();
-  printf("Current GPU frequency: %u Hz\n", gpu_freq);
+  uint32_t gpu_freq = setup_gpu(log_file);
+  printf_file(log_file, "Current GPU frequency: %u Hz\n", gpu_freq);
 #endif
 
 /*
@@ -212,35 +244,25 @@ int main(int argc, char *argv[]) {
     exit(1);
 #endif
 #if GPU
-    num_pass_gpu = gpu_events_all();
+    num_pass_gpu = gpu_events_all(log_file);
 #endif
   }
   // event_source: config
   else if (arguments.event_source == CONFIG) {
 #if CPU
-    cpu_events_from_config(arguments.config_cpu);
+    cpu_events_from_config(arguments.config_cpu, log_file);
 #endif
 #if GPU
-    num_pass_gpu = gpu_events_from_config(arguments.config_gpu);
+    num_pass_gpu = gpu_events_from_config(arguments.config_gpu, log_file);
 #endif
   }
   // event_source: cli
   else if (arguments.event_source == CLI) {
 #if CPU
-    cpu_events_from_cli(arguments.cli_cpu, arguments.num_cli_cpu);
+    cpu_events_from_cli(arguments.cli_cpu, arguments.num_cli_cpu, log_file);
 #endif
 #if GPU
-    num_pass_gpu = gpu_events_from_cli(arguments.cli_gpu, arguments.num_cli_gpu);
-#endif
-  }
-
-  if (arguments.mode == NUM_PASSES){
-#if CPU
-    printf("%s:%d: 'num_passes' mode is not supported for CPU.\n", __FILE__, __LINE__);
-    exit(1);
-#endif
-#if GPU
-    return num_pass_gpu;
+    num_pass_gpu = gpu_events_from_cli(arguments.cli_gpu, arguments.num_cli_gpu, log_file);
 #endif
   }
 
@@ -286,9 +308,11 @@ int main(int argc, char *argv[]) {
     //////////////////////////////////
     // set up profiler and benchmark
     //////////////////////////////////
+    printf_file(log_file, "\n");
+    printf_file(log_file, "════════════════════════════════════════════════════════════════════════════════\n");
 
     for (int p = 0; p < num_pass_gpu; p++) {
-      printf("\n");
+      printf_file(log_file, "\n");
       // setup traces
       FILE *trace_file;
       char *trace_path = NULL;
@@ -318,9 +342,9 @@ int main(int argc, char *argv[]) {
         }
         // join trace_dir and trace_name
         cat_path(arguments.trace_dir, trace_name, trace_path);
-        printf("Trace path: %s\n", trace_path);
         trace_i++;
       } while(access(trace_path, F_OK) != -1);
+      printf_file(log_file, "Trace path: %s\n", trace_path);
       // open trace file
       trace_file = fopen(trace_path, "wb");
       if (trace_file == NULL){
@@ -382,13 +406,13 @@ int main(int argc, char *argv[]) {
 
       // run benchmark
       arguments.benchmark_args[0] = benchmark_path; // assign argv[0]
-      printf("\n");
-      printf("Running benchmark '%s' with %d argument(s).\n", benchmark_name, arguments.num_benchmark_args);
-      printf("Benchmark arguments:\n");
+      printf_file(log_file, "\n");
+      printf_file(log_file, "Running benchmark '%s' with %d argument(s).\n", benchmark_name, arguments.num_benchmark_args);
+      printf_file(log_file, "Benchmark arguments:\n");
       for (int i = 0; i <= arguments.num_benchmark_args + 1; i++)
-        printf("  argv[%d] = %s \n", i, arguments.benchmark_args[i]);
-        printf("\n");
-        printf("────────────────────────────────────────────────────────────────────────────────\n");
+        printf_file(log_file, "  argv[%d] = %s \n", i, arguments.benchmark_args[i]);
+      printf("\n");
+      printf("────────────────────────────────────────────────────────────────────────────────\n");
       for (int r = 0; r < NUM_PASSES; r++) {
         printf(" Benchmark pass %d/%d\n", r + 1, NUM_PASSES);
         printf("────────────────────────────────────────────────────────────────────────────────\n");
@@ -446,7 +470,7 @@ int main(int argc, char *argv[]) {
  */
 
   deinit_platform();
-  // free memory
+  fclose(log_file);
 #if CPU
   free(arguments.cli_cpu);
   deinit_cpu();
@@ -454,6 +478,16 @@ int main(int argc, char *argv[]) {
 #if GPU
   free(arguments.cli_gpu);
 #endif
+
+  if (arguments.mode == NUM_PASSES){
+#if CPU
+    printf("%s:%d: 'num_passes' mode is not supported for CPU.\n", __FILE__, __LINE__);
+    exit(1);
+#endif
+#if GPU
+    return num_pass_gpu;
+#endif
+  }
   return 0;
 }
 

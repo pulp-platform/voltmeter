@@ -84,12 +84,12 @@ typedef struct {
  */
 
 // setup
-uint32_t setup_cpu();
+uint32_t setup_cpu(FILE *log_file);
 void deinit_cpu();
 
 // events parsing
-void cpu_events_from_cli(cpu_event_id_t *events, unsigned int num_events);
-void cpu_events_from_config(char *config_file);
+void cpu_events_from_cli(cpu_event_id_t *events, unsigned int num_events, FILE *log_file);
+void cpu_events_from_config(char *config_file, FILE *log_file);
 void parse_cpu_events_json(char *config_file, cpu_events_config_t *events_config);
 
 // performance monitoring unit driver

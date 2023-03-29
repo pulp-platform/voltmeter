@@ -28,7 +28,7 @@
  * ╚═══════════════════════════════════════════════════════╝
  */
 
-static void print_cpu_events();
+static void print_cpu_events(FILE *log_file);
 static void free_events_freq_config(cpu_events_freq_config_t *events_freq_config);
 static void free_events_config(cpu_events_config_t *events_config);
 
@@ -52,7 +52,7 @@ cpu_events_freq_config_t cpu_events;
  * └───────────────────────────────────────────────────────┘
  */
 
-uint32_t setup_cpu() {
+uint32_t setup_cpu(FILE *log_file) {
 #ifdef __JETSON_AGX_XAVIER
   // allocate NUM_CORES_CPU cpu_events_freq_config_t.core
   cpu_events.frequency = clip_cpu_freq(get_cpu_freq());
@@ -77,8 +77,8 @@ uint32_t setup_cpu() {
       exit(1);
     }
   }
-  printf("CPU cores: %d\n", NUM_CORES_CPU);
-  printf("Counters per CPU core: %d\n", NUM_COUNTERS_CPU);
+  printf_file(log_file, "CPU cores: %d\n", NUM_CORES_CPU);
+  printf_file(log_file, "Counters per CPU core: %d\n", NUM_COUNTERS_CPU);
   return cpu_events.frequency;
 #else
 #error "Platform not supported."
@@ -95,7 +95,7 @@ void deinit_cpu(){
  * └───────────────────────────────────────────────────────┘
  */
 
-void cpu_events_from_cli(cpu_event_id_t *events, unsigned int num_events){
+void cpu_events_from_cli(cpu_event_id_t *events, unsigned int num_events, FILE *log_file){
 #ifdef __JETSON_AGX_XAVIER
   // events are expected in the order:
   // core0_event0 core0_event1 core0_event2 core1_event0 core1_event1 ...
@@ -108,13 +108,13 @@ void cpu_events_from_cli(cpu_event_id_t *events, unsigned int num_events){
       cpu_events.core[c].event_id[e] = events[c * NUM_COUNTERS_CPU + e];
     }
   }
-  print_cpu_events();
+  print_cpu_events(log_file);
 #else
 #error "Platform not supported."
 #endif
 }
 
-void cpu_events_from_config(char *config_file) {
+void cpu_events_from_config(char *config_file, FILE *log_file) {
   cpu_events_config_t events_config;
   parse_cpu_events_json(config_file, &events_config);
 
@@ -136,7 +136,7 @@ void cpu_events_from_config(char *config_file) {
   }
   // de-init events_config
   free_events_config(&events_config);
-  print_cpu_events();
+  print_cpu_events(log_file);
 }
 
 void parse_cpu_events_json(char *config_file, cpu_events_config_t *events_config){
@@ -404,14 +404,14 @@ uint32_t clip_cpu_freq(uint32_t freq){
  * ╚═══════════════════════════════════════════════════════╝
  */
 
-static void print_cpu_events(){
-  printf("Profiling CPU events:\n");
+static void print_cpu_events(FILE *log_file){
+  printf_file(log_file, "Profiling CPU events:\n");
   for(int c = 0; c < cpu_events.num_cores; c++){
-    printf("  [core %d] ", c);
+    printf_file(log_file, "  [core %d] ", c);
     for(int e = 0; e < cpu_events.core[c].num_counters_core; e++){
-      printf("0x%02x ", cpu_events.core[c].event_id[e]);
+      printf_file(log_file, "0x%02x ", cpu_events.core[c].event_id[e]);
     }
-    printf("\n");
+    printf_file(log_file, "\n");
   }
 }
 

@@ -46,3 +46,15 @@ int jsmn_parse_token(const char *json_string, jsmntok_t *tok, const char *format
   va_end(args);
   return ret;
 }
+
+// both print to stdout and to a file
+int printf_file(FILE *file, const char *format, ...) {
+  va_list args;
+  va_start(args, format);
+  int ret = vfprintf(stdout, format, args);
+  va_end(args);
+  va_start(args, format);
+  ret += vfprintf(file, format, args);
+  va_end(args);
+  return ret;
+}
