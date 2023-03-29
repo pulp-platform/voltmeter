@@ -20,7 +20,7 @@ int cat_path(char *path, char *filename, char *full_path) {
     sprintf(format_string, "%%s%%s");
   else
     sprintf(format_string, "%%s/%%s");
-  return  sprintf(full_path, format_string, path, filename);
+  return sprintf(full_path, format_string, path, filename);
 }
 
 // strip path from filename and remove extension, if any

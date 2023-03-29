@@ -39,21 +39,6 @@
 
 /*
  * ╔═══════════════════════════════════════════════════════╗
- * ║                        Macros                         ║
- * ╚═══════════════════════════════════════════════════════╝
- */
-
-// Parameters
-#define TRACE_NAME_LEN 150
-
-/*
- * ╔═══════════════════════════════════════════════════════╗
- * ║                      Prototypes                       ║
- * ╚═══════════════════════════════════════════════════════╝
- */
-
-/*
- * ╔═══════════════════════════════════════════════════════╗
  * ║                  Argp configuration                   ║
  * ╚═══════════════════════════════════════════════════════╝
  */
@@ -143,9 +128,9 @@ int main(int argc, char *argv[]) {
   argp_parse(&argp, argc, argv, 0, 0, &arguments);
 
   // print all arguments parsed by argp
-  printf("\n═════════════════════════════════════\n");
-  printf("              Voltmeter              \n");
-  printf("─────────────────────────────────────\n");
+  printf("\n════════════════════════════════════════════════════════════════════════════════\n");
+  printf("                                   Voltmeter                                    \n");
+  printf("────────────────────────────────────────────────────────────────────────────────\n");
   printf("Supported devices: ");
   if (CPU)
     printf("CPU ");
@@ -193,7 +178,7 @@ int main(int argc, char *argv[]) {
       printf("%s ", arguments.benchmark_args[i]);
     printf("\n");
   }
-  printf("═════════════════════════════════════\n\n");
+  printf("════════════════════════════════════════════════════════════════════════════════\n\n");
 
 /*
  * ┌───────────────────────────────────────────────────────┐
@@ -213,52 +198,12 @@ int main(int argc, char *argv[]) {
 
 /*
  * ┌───────────────────────────────────────────────────────┐
- * │                      Setup trace                      │
- * └───────────────────────────────────────────────────────┘
- */
-  FILE *trace_file;
-  char *trace_path;
-  // strip path from arguments.benchmark
-  char *benchmark_path = strdup(arguments.benchmark);
-  char *benchmark_name = path_basename(arguments.benchmark);
-
-  // generate output trace path
-  if (arguments.mode == CHARACTERIZATION || arguments.mode == PROFILE){
-    // generate trace name
-    char trace_name[TRACE_NAME_LEN] = {'\0'};
-    sprintf(trace_name, "%s", benchmark_name);
-#if CPU
-    sprintf(trace_name + strlen(trace_name), "_cpu_%u", cpu_freq);
-#endif
-#if GPU
-    sprintf(trace_name + strlen(trace_name), "_gpu_%u", gpu_freq);
-#endif
-    sprintf(trace_name + strlen(trace_name), ".bin");
-    // allocate memory for trace path
-    trace_path = malloc(strlen(arguments.trace_dir) + strlen(trace_name) + 10);
-    if (trace_path == NULL){
-      printf("%s:%d: failed to allocate memory.\n", __FILE__, __LINE__);
-      exit(1);
-    }
-    // join trace_dir and trace_name
-    cat_path(arguments.trace_dir, trace_name, trace_path);
-    printf("Trace path: %s\n", trace_path);
-    // open trace file
-    trace_file = fopen(trace_path, "wb");
-    if (trace_file == NULL){
-    printf("%s:%d: failed to open file '%s'.\n", __FILE__, __LINE__, trace_path);
-      exit(1);
-    }
-  }
-
-/*
- * ┌───────────────────────────────────────────────────────┐
  * │                     Setup events                      │
  * └───────────────────────────────────────────────────────┘
  */
 
   // GPU events profiling may require multiple serial passes
-  int num_pass_gpu; // number of benchmark reaplays required to profile desired events
+  int num_pass_gpu = 1; // number of benchmark reaplays required to profile desired events
 
   // event_source: all_events
   if (arguments.event_source == ALL_EVENTS) {
@@ -307,13 +252,9 @@ int main(int argc, char *argv[]) {
 
   if (arguments.mode == CHARACTERIZATION || arguments.mode == PROFILE){
 
-#if GPU
-    if (arguments.mode == PROFILE)
-      if (num_pass_gpu > 1) {
-        printf("%s:%d: 'profile' mode for GPU does not support multiple passes.\n", __FILE__, __LINE__);
-        exit(1);
-      }
-#endif
+    // strip path from arguments.benchmark
+    char *benchmark_path = strdup(arguments.benchmark);
+    char *benchmark_name = path_basename(arguments.benchmark);
     // prepare benchmark
     void* benchmark_handle = dlopen(benchmark_path, RTLD_NOW | RTLD_LOCAL);
     if (!benchmark_handle) {
@@ -330,102 +271,172 @@ int main(int argc, char *argv[]) {
         exit(1);
     }
 
-    // setup profiler
-    profiler_args_t *profiler_args = NULL;
-    size_t num_profiler_threads = 0;
-    cpu_set_t cpu_set;
-    pthread_t *profiler_threads;
-    pthread_attr_t pthread_attr;
-    pthread_barrier_t profiler_barrier;
-    int ret = 0;
-    volatile int benchmark_complete = 0;
-
-    // allocate profiler_args
-#if CPU
-    num_profiler_threads = cpu_events.num_cores;
-#else
-    num_profiler_threads = 1;
-#endif
-    profiler_args = malloc(sizeof(profiler_args_t) * num_profiler_threads);
-    if (profiler_args == NULL){
-      printf("%s:%d: failed to allocate memory.\n", __FILE__, __LINE__);
-      exit(1);
-    }
-    profiler_threads = malloc(sizeof(pthread_t) * num_profiler_threads);
-    if (profiler_threads == NULL){
-      printf("%s:%d: failed to allocate memory.\n", __FILE__, __LINE__);
-      exit(1);
-    }
-    // init profiler thread(s) barrier
-    pthread_barrier_init(&profiler_barrier, NULL, num_profiler_threads);
-    // launch profiler thread(s)
-    printf("\n");
-    for (int t = 0; t < num_profiler_threads; t++) {
-      printf("Initializing profiler thread for core %d...\n", t);
-      // setup profiler arguments
-      profiler_args[t].thread_id = t;
-      profiler_args[t].trace_file = trace_file;
-      profiler_args[t].signal = &benchmark_complete;
-      profiler_args[t].barrier = &profiler_barrier;
-      //TODO: Manage set_id for GPU
-      profiler_args[t].set_id_gpu = 0;
-      // set up pthread
-      pthread_attr_init(&pthread_attr);
-      CPU_ZERO(&cpu_set);
-      CPU_SET(t, &cpu_set);
-      pthread_attr_setaffinity_np(&pthread_attr, sizeof(cpu_set_t), &cpu_set);
-      // create thread c limiting its affinity to only CPU c
-      ret = pthread_create(&profiler_threads[t], &pthread_attr, events_profiler, &profiler_args[t]);
-      if (ret != 0) {
-        perror("pthread_create");
-        printf("%s:%d: failed to create profiler thread.\n", __FILE__, __LINE__);
+    if (num_pass_gpu > 1) {
+      if (arguments.mode == PROFILE) {
+        printf("%s:%d: 'profile' mode cannot have multiple passes.\n", __FILE__, __LINE__);
         exit(1);
+      } else if (arguments.mode == CHARACTERIZATION) {
+        if (CPU) {
+          printf("%s:%d: 'characterization' mode does not support multiple passes for CPU; you can perform multiple passes to profile incompatible counters by launching Voltmeter multiple times.\n", __FILE__, __LINE__);
+          exit(1);
+        }
       }
     }
 
-    // run benchmark
-    printf("\n");
-    arguments.benchmark_args[0] = benchmark_path; // assign argv[0]
-    printf("Running benchmark '%s' with %d argument(s).\n", benchmark_name, arguments.num_benchmark_args);
-    printf("Benchmark arguments:\n");
-    for (int i = 0; i <= arguments.num_benchmark_args + 1; i++)
-      printf("  argv[%d] = %s \n", i, arguments.benchmark_args[i]);
-    printf("\n\n");
-    // benchmarks needs to return with 'return' and not 'exit'
-    benchmark(arguments.num_benchmark_args + 1, arguments.benchmark_args);
-    // signal profiler threads to stop
-    benchmark_complete = 1;
-    // close benchmark
-    dlclose(benchmark_handle);
-    // handle dl errors
-    char *error = dlerror();
-    if (error != NULL) {
-      fputs(error, stdout);
+    //////////////////////////////////
+    // set up profiler and benchmark
+    //////////////////////////////////
+
+    for (int p = 0; p < num_pass_gpu; p++) {
       printf("\n");
-      printf("%s:%d: benchmark %s cannot be run.\n", __FILE__, __LINE__, benchmark_path);
-      exit(1);
-    }
-    //TODO: Required?
-    // wait for the benchmark on GPU to finish (1 task running on GPU at a time)
-    //cuCtxSynchronize();
-    //cudaDeviceSynchronize();
+      // setup traces
+      FILE *trace_file;
+      char *trace_path = NULL;
 
-    printf("Benchmark '%s' finished.\n\n", benchmark_name);
-    // join profiler threads
-    for (int t = 0; t < num_profiler_threads; t++) {
-      ret = pthread_join(profiler_threads[t], NULL);
-      if (ret != 0) {
-        perror("pthread_join");
-        printf("%s:%d: failed to join profiler thread.\n", __FILE__, __LINE__);
+      // generate trace name
+      unsigned int trace_i = 0;
+      char trace_name[150] = {'\0'};
+      do {
+        // this loop creates numbered traces if benchmarks with same name are profiled:
+        // useful when same benchmark is profiled multiple times with different arguments,
+        // or when multiple passes are performed with same configuration but different counters
+        sprintf(trace_name, "%s", benchmark_name);
+#if CPU
+        sprintf(trace_name + strlen(trace_name), "_cpu_%u", cpu_freq);
+#endif
+#if GPU
+        sprintf(trace_name + strlen(trace_name), "_gpu_%u", gpu_freq);
+#endif
+        if (trace_i)
+          sprintf(trace_name + strlen(trace_name), "_%u", trace_i); // add suffix if != 0
+        sprintf(trace_name + strlen(trace_name), ".bin");
+        // allocate memory for trace path
+        trace_path = realloc(trace_path, strlen(arguments.trace_dir) + strlen(trace_name) + 10);
+        if (trace_path == NULL){
+          printf("%s:%d: failed to allocate memory.\n", __FILE__, __LINE__);
+          exit(1);
+        }
+        // join trace_dir and trace_name
+        cat_path(arguments.trace_dir, trace_name, trace_path);
+        printf("Trace path: %s\n", trace_path);
+        trace_i++;
+      } while(access(trace_path, F_OK) != -1);
+      // open trace file
+      trace_file = fopen(trace_path, "wb");
+      if (trace_file == NULL){
+      printf("%s:%d: failed to open file '%s'.\n", __FILE__, __LINE__, trace_path);
         exit(1);
       }
-      printf("Profiler thread %d has ended.\n", t);
+
+      // setup profiler
+      profiler_args_t *profiler_args = NULL;
+      size_t num_profiler_threads = 0;
+      cpu_set_t cpu_set;
+      pthread_t *profiler_threads;
+      pthread_attr_t pthread_attr;
+      pthread_barrier_t profiler_barrier;
+      int ret = 0;
+      volatile int benchmark_complete = 0;
+
+      // allocate profiler_args
+#if CPU
+      num_profiler_threads = cpu_events.num_cores;
+#else
+      num_profiler_threads = 1;
+#endif
+      profiler_args = malloc(sizeof(profiler_args_t) * num_profiler_threads);
+      if (profiler_args == NULL){
+        printf("%s:%d: failed to allocate memory.\n", __FILE__, __LINE__);
+        exit(1);
+      }
+      profiler_threads = malloc(sizeof(pthread_t) * num_profiler_threads);
+      if (profiler_threads == NULL){
+        printf("%s:%d: failed to allocate memory.\n", __FILE__, __LINE__);
+        exit(1);
+      }
+      // init profiler thread(s) barrier
+      pthread_barrier_init(&profiler_barrier, NULL, num_profiler_threads);
+      // launch profiler thread(s)
+      printf("\n");
+      for (int t = 0; t < num_profiler_threads; t++) {
+        printf("Initializing profiler thread for core %d...\n", t);
+        // setup profiler arguments
+        profiler_args[t].thread_id = t;
+        profiler_args[t].trace_file = trace_file;
+        profiler_args[t].signal = &benchmark_complete;
+        profiler_args[t].barrier = &profiler_barrier;
+        profiler_args[t].set_id_gpu = p;
+        // set up pthread
+        pthread_attr_init(&pthread_attr);
+        CPU_ZERO(&cpu_set);
+        CPU_SET(t, &cpu_set);
+        pthread_attr_setaffinity_np(&pthread_attr, sizeof(cpu_set_t), &cpu_set);
+        // create thread c limiting its affinity to only CPU c
+        ret = pthread_create(&profiler_threads[t], &pthread_attr, events_profiler, &profiler_args[t]);
+        if (ret != 0) {
+          perror("pthread_create");
+          printf("%s:%d: failed to create profiler thread.\n", __FILE__, __LINE__);
+          exit(1);
+        }
+      }
+
+      // run benchmark
+      arguments.benchmark_args[0] = benchmark_path; // assign argv[0]
+      printf("\n");
+      printf("Running benchmark '%s' with %d argument(s).\n", benchmark_name, arguments.num_benchmark_args);
+      printf("Benchmark arguments:\n");
+      for (int i = 0; i <= arguments.num_benchmark_args + 1; i++)
+        printf("  argv[%d] = %s \n", i, arguments.benchmark_args[i]);
+        printf("\n");
+        printf("────────────────────────────────────────────────────────────────────────────────\n");
+      for (int r = 0; r < NUM_PASSES; r++) {
+        printf(" Benchmark pass %d/%d\n", r + 1, NUM_PASSES);
+        printf("────────────────────────────────────────────────────────────────────────────────\n");
+        printf("\n");
+        // benchmarks needs to return with 'return' and not 'exit'
+        benchmark(arguments.num_benchmark_args + 1, arguments.benchmark_args);
+        printf("\n");
+        printf("────────────────────────────────────────────────────────────────────────────────\n");
+      }
+      printf("\n");
+      // signal profiler threads to stop
+      benchmark_complete = 1;
+      // close benchmark
+      dlclose(benchmark_handle);
+      // handle dl errors
+      char *error = dlerror();
+      if (error != NULL) {
+        fputs(error, stdout);
+        printf("\n");
+        printf("%s:%d: benchmark %s cannot be run.\n", __FILE__, __LINE__, benchmark_path);
+        exit(1);
+      }
+
+      printf("Benchmark '%s' finished.\n\n", benchmark_name);
+      // join profiler threads
+      for (int t = 0; t < num_profiler_threads; t++) {
+        ret = pthread_join(profiler_threads[t], NULL);
+        if (ret != 0) {
+          perror("pthread_join");
+          printf("%s:%d: failed to join profiler thread.\n", __FILE__, __LINE__);
+          exit(1);
+        }
+        printf("Profiler thread %d has ended.\n", t);
+      }
+      // free profiler_args
+      free(profiler_args);
+      free(profiler_threads);
+      // clean traces variables
+      fclose(trace_file);
+      free(trace_path);
+      // destroy profiler thread(s) barrier
+      pthread_barrier_destroy(&profiler_barrier);
+
+#if GPU
+      // wait for the benchmark on GPU to finish (1 task running on GPU at a time)
+      sync_gpu_slave();
+#endif
     }
-    // free profiler_args
-    free(profiler_args);
-    free(profiler_threads);
-    // destroy profiler thread(s) barrier
-    pthread_barrier_destroy(&profiler_barrier);
   }
 
 /*
@@ -443,10 +454,6 @@ int main(int argc, char *argv[]) {
 #if GPU
   free(arguments.cli_gpu);
 #endif
-  // close files
-  if (arguments.mode == CHARACTERIZATION || arguments.mode == PROFILE)
-    fclose(trace_file);
-    free(trace_path);
   return 0;
 }
 

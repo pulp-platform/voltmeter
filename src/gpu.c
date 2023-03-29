@@ -529,6 +529,17 @@ uint32_t clip_gpu_freq(uint32_t freq){
 #endif
 }
 
+void sync_gpu_slave() {
+#ifdef __JETSON_AGX_XAVIER
+  CUresult ret_cuda;
+  //cuCtxSynchronize();
+  ret_cuda = cudaDeviceSynchronize();
+  CHECK_CU_ERROR(ret_cuda, "cuDeviceGet");
+#else
+#error "Platform not supported."
+#endif
+}
+
 /*
  * ╔═══════════════════════════════════════════════════════╗
  * ║                   Static functions                    ║

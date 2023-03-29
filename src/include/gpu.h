@@ -111,5 +111,6 @@ void read_gpu_freq();
 // helper functions
 uint32_t get_gpu_freq();
 uint32_t clip_gpu_freq(uint32_t freq);
+void sync_gpu_slave();
 
 #endif // _GPU_H

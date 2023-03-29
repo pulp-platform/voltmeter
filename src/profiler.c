@@ -26,8 +26,12 @@
  * ╚═══════════════════════════════════════════════════════╝
  */
 
+#if CPU
 extern cpu_events_freq_config_t cpu_events;
+#endif
+#if GPU
 extern gpu_events_freq_config_t gpu_events;
+#endif
 extern platform_power_t platform_power;
 
 /*
@@ -119,7 +123,7 @@ void *events_profiler(void *args) {
         fwrite(&cpu_events.core[c].freq_read, sizeof(uint32_t), 1, thread_args->trace_file);
         fwrite(cpu_events.core[c].counter, sizeof(cpu_counter_t), cpu_events.core[c].num_counters_core, thread_args->trace_file);
 #ifdef __JETSON_AGX_XAVIER
-        fwrite(cpu_events.core[c].counter_clk, sizeof(uint64_t), 1, thread_args->trace_file);
+        fwrite(&cpu_events.core[c].counter_clk, sizeof(uint64_t), 1, thread_args->trace_file);
 #endif
       }
 #endif
@@ -160,7 +164,9 @@ void *events_profiler(void *args) {
   disable_pmu_cpu_core();
 #endif
 #if GPU
-  // de-init GPU PMU
-  disable_pmu_gpu();
+  if (thread_args->thread_id == 0) {
+    // de-init GPU PMU
+    disable_pmu_gpu();
+  }
 #endif
 }
