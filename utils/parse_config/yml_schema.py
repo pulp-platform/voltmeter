@@ -50,20 +50,42 @@
         'type': 'dict',
         'schema': {
             'events': {
+                'required': True,
+                'anyof': [
+                    {'dependencies': {'events': 'all_events'}},
+                    {'allof': [
+                        {'dependencies': {'events': 'config'}},
+                        {'anyof': [ # strong check left to voltemter argparse
+                            {'dependencies': ['config_cpu']},
+                            {'dependencies': ['config_gpu']},
+                        ]},
+                    ]},
+                    {'allof': [
+                        {'dependencies': {'events': 'cli'}},
+                        {'anyof': [ # strong check left to voltemter argparse
+                            {'dependencies': ['cli_cpu']},
+                            {'dependencies': ['cli_gpu']},
+                        ]},
+                    ]},
+                ],
                 'type': 'string',
                 'allowed': ['all_events', 'config', 'cli']
             },
             'config_cpu': {
                 'dependencies': {'events': 'config'},
-                'type': 'string'
+                'type': 'string',
+                'nullable': False,
             },
             'config_gpu': {
                 'dependencies': {'events': 'config'},
-                'type': 'string'
+                'type': 'string',
+                'nullable': False,
             },
             'cli_cpu': {
                 'dependencies': {'events': 'cli'},
                 'type': 'list',
+                'nullable': False,
+                'empty': False,
                 'schema': {
                     'type': 'integer',
                     'min': 0
@@ -72,6 +94,8 @@
             'cli_gpu': {
                 'dependencies': {'events': 'cli'},
                 'type': 'list',
+                'nullable': False,
+                'empty': False,
                 'schema': {
                     'type': 'integer',
                     'min': 0
@@ -88,6 +112,7 @@
             },
             'benchmarks': {
                 'required': True,
+                'noneof': [{'dependencies': {'mode': 'num_passes'}}],
                 'type': 'list',
                 'schema': {
                     'type': 'dict',

@@ -40,6 +40,7 @@ if __name__ == '__main__':
     # process configuration
     ############################
 
+    config_yml = v.normalized(config_yml)
     # remove empty arguments
     config = copy.deepcopy(config_yml)
     for key in config_yml['arguments']:
