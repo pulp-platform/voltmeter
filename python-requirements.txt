@@ -1,3 +1,5 @@
 pyyaml
+copy
 cerberus
 pprint
+re

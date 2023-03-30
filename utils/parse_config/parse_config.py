@@ -11,6 +11,7 @@ import yaml
 import copy
 from cerberus import Validator
 import pprint
+import re
 
 if __name__ == '__main__':
     # input
@@ -60,9 +61,11 @@ if __name__ == '__main__':
                 item[key] = str(item[key])
         # convert paths to absolute
         item['path'] = os.path.abspath(item['path'])
+        if not os.path.exists(item['path']):
+            raise Exception('Invalid benchmark path {}: file not found'.format(item['path']))
         # process benchmark arguments
-        temp_args = copy.deepcopy(item['args'])
         if 'args' in item:
+            temp_args = copy.deepcopy(item['args'])
             item['args'] = ''
             # check that arguments string does not contain commas
             if ',' in temp_args:
@@ -97,6 +100,8 @@ if __name__ == '__main__':
         for key in [k for k in config if k != 'arguments']:
             for param in config[key]:
                 f.write('{} := {}\n'.format(param, int(config[key][param]) if type(config[key][param]) is bool else config[key][param]))
+        if 'trace_dir' in config['arguments']:
+            f.write('{} := {}\n'.format('trace_dir', config['arguments']['trace_dir'])) # take it from voltmeter args for automatic dir creation
         f.write('\n')
         f.write('# Voltmeter CLI arguments\n')
         for key in config['arguments']:
@@ -108,13 +113,13 @@ if __name__ == '__main__':
                 f.write('BENCHMARKS := $$\' \\\n')
                 for b in config['arguments']['benchmarks'][:-1]:
                     f.write('\t--benchmark={}'.format(b['path']))
-                    if b['args'] is not None:
+                    if 'args' in b and b['args'] is not None:
                         f.write(' --benchmark_args={}'.format(b['args']))
                     f.write('\\n \\\n')
                 # last element
                 b = config['arguments']['benchmarks'][-1]
                 f.write('\t--benchmark={}'.format(b['path']))
-                if b['args'] is not None:
+                if 'args' in b and b['args'] is not None:
                     f.write(' --benchmark_args={}'.format(b['args']))
                 f.write(' \\\n\'\n')
             # command-line events

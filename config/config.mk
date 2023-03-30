@@ -8,17 +8,18 @@ SHELL = /bin/bash
 
 # directories
 ROOT_DIR    := $(abspath $(shell git rev-parse --show-toplevel 2>/dev/null))
-SRC_DIR     := $(ROOT_DIR)/src
 CONFIG_DIR  := $(ROOT_DIR)/config
-UTILS_DIR   := $(ROOT_DIR)/utils
-INSTALL_DIR := $(ROOT_DIR)/install
-TRACE_DIR   ?= $(ROOT_DIR)/traces
-
 # files
 VOLTMETER_YML := $(ROOT_DIR)/Voltmeter.yml
 VOLTMETER_MK  := $(CONFIG_DIR)/voltmeter.mk
 
 -include $(VOLTMETER_MK)
+
+# more directories
+SRC_DIR     := $(ROOT_DIR)/src
+UTILS_DIR   := $(ROOT_DIR)/utils
+INSTALL_DIR := $(ROOT_DIR)/install
+TRACE_DIR   ?= $(trace_dir)
 
 # extension of files to lint with clang-format
 #TODO: Implement check (with clang lint or editorconfig checker)
