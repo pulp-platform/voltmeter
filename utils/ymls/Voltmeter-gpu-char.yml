@@ -1,0 +1,89 @@
+# Copyright 2023 ETH Zurich and University of Bologna.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Author: Sergio Mazzola, ETH Zurich <smazzola@iis.ee.ethz.ch>
+
+param-platform:
+  PLATFORM: jetson_agx_xavier
+  PROFILE_CPU: False
+  PROFILE_GPU: True
+
+param-profiler:
+  NUM_RUN: 2
+  SAMPLE_PERIOD_US: 100000
+
+arguments:
+  events: all_events
+  mode: characterization
+  trace_dir: ./traces-gpu-char
+  benchmarks:
+    - name: b+tree
+      path: ./utils/workloads/rodinia/cuda/b+tree/b+tree.so
+      args: file ../utils/workloads/rodinia/data/b+tree/mil.txt command ../utils/workloads/rodinia/data/b+tree/command.txt
+    - name: backprop
+      path: ./utils/workloads/rodinia/cuda/backprop/backprop.so
+      args: 65536
+    - name: bfs
+      path: ./utils/workloads/rodinia/cuda/bfs/bfs.so
+      args: ../utils/workloads/rodinia/data/bfs/graph1MW_6.txt
+    - name: cfd
+      path: ./utils/workloads/rodinia/cuda/cfd/euler3d_double.so
+      args: ../utils/workloads/rodinia/data/cfd/missile.domn.0.2M
+    - name: dwt2d
+      path: ./utils/workloads/rodinia/cuda/dwt2d/dwt2d.so
+      args: rgb.bmp -d 1024x1024 -f -5 -l 3
+    - name: gaussian
+      path: ./utils/workloads/rodinia/cuda/gaussian/gaussian.so
+      args: -s 16
+    - name: heartwall
+      path: ./utils/workloads/rodinia/cuda/heartwall/heartwall.so
+      args: ../utils/workloads/rodinia/data/heartwall/test.avi 20
+    - name: hotspot
+      path: ./utils/workloads/rodinia/cuda/hotspot/hotspot.so
+      args: 512 2 2 ../utils/workloads/rodinia/data/hotspot/temp_512 ../utils/workloads/rodinia/data/hotspot/power_512 output.out
+    - name: hotspot3D
+      path: ./utils/workloads/rodinia/cuda/hotspot3D/3D.so
+      args: 512 8 100 ../utils/workloads/rodinia/data/hotspot3D/power_512x8 ../utils/workloads/rodinia/data/hotspot3D/temp_512x8 output.out
+    - name: hybridsort
+      path: ./utils/workloads/rodinia/cuda/hybridsort/hybridsort.so
+      args: r
+    - name: kmeans
+      path: ./utils/workloads/rodinia/cuda/kmeans/kmeans.so
+      args: -o -i ../utils/workloads/rodinia/data/kmeans/kdd_cup
+    - name: lavaMD
+      path: ./utils/workloads/rodinia/cuda/lavaMD/lavaMD.so
+      args: -boxes1d 10
+    - name: leukocyte
+      path: ./utils/workloads/rodinia/cuda/leukocyte/CUDA/leukocyte.so
+      args: ../utils/workloads/rodinia/data/leukocyte/testfile.avi 5
+    - name: lud
+      path: ./utils/workloads/rodinia/cuda/lud/cuda/lud_cuda.so
+      args: -s 256 -v
+    - name: mummergpu
+      path: ./utils/workloads/rodinia/cuda/mummergpu/bin/mummergpu.so
+      args: ../utils/workloads/rodinia/data/mummergpu/NC_003997.fna ../utils/workloads/rodinia/data/mummergpu/NC_003997_q100bp.fna
+    - name: myocyte
+      path: ./utils/workloads/rodinia/cuda/myocyte/myocyte.so
+      args: 100 1 0
+    - name: nn
+      path: ./utils/workloads/rodinia/cuda/nn/nn.so
+      args: ./utils/workloads/rodinia/cuda/nn/filelist_4 -r 5 -lat 30 -lng 90
+    - name: nw
+      path: ./utils/workloads/rodinia/cuda/nw/needle.so
+      args: 2048 10 2
+    - name: particlefilter
+      path: ./utils/workloads/rodinia/cuda/particlefilter/particlefilter_float.so
+      args: -x 128 -y 128 -z 10 -np 10000
+    - name: pathfinder
+      path: ./utils/workloads/rodinia/cuda/pathfinder/pathfinder.so
+      args: 100000 100
+    - name: srad_v1
+      path: ./utils/workloads/rodinia/cuda/srad/srad_v1/srad.so
+      args: 100 0.5 502 458 4
+    - name: srad_v2
+      path: ./utils/workloads/rodinia/cuda/srad/srad_v2/srad.so
+      args: 2048 2048 0 127 0 127 2 0.5 2
+    - name: streamcluster
+      path: ./utils/workloads/rodinia/cuda/streamcluster/sc_gpu.so
+      args: 10 20 256 65536 65536 1000 none output.txt 4

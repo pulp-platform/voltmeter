@@ -1,0 +1,74 @@
+# Copyright 2023 ETH Zurich and University of Bologna.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Author: Sergio Mazzola, ETH Zurich <smazzola@iis.ee.ethz.ch>
+
+param-platform:
+  PLATFORM: jetson_agx_xavier
+  PROFILE_CPU: True
+  PROFILE_GPU: False
+
+param-profiler:
+  NUM_RUN: 2
+  SAMPLE_PERIOD_US: 100000
+
+arguments:
+  events: all_events
+  mode: characterization
+  trace_dir: ./traces-cpu-char
+  benchmarks:
+    - name: b+tree
+      path: ./utils/workloads/rodinia/openmp/b+tree/b+tree.so
+      args: core 2 file ../utils/workloads/rodinia/data/b+tree/mil.txt command ../utils/workloads/rodinia/data/b+tree/command.txt
+    - name: backprop
+      path: ./utils/workloads/rodinia/openmp/backprop/backprop.so
+      args: 65536
+    - name: bfs
+      path: ./utils/workloads/rodinia/openmp/bfs/bfs.so
+      args: 4 ../utils/workloads/rodinia/data/bfs/graph1MW_6.txt
+    - name: euler3d_cpu_double
+      path: ./utils/workloads/rodinia/openmp/cfd/euler3d_cpu_double.so
+      args: ../utils/workloads/rodinia/data/cfd/fvcorr.domn.193K
+    - name: heartwall
+      path: ./utils/workloads/rodinia/openmp/heartwall/heartwall.so
+      args: ../utils/workloads/rodinia/data/heartwall/test.avi 20 4
+    - name: hotspot
+      path: ./utils/workloads/rodinia/openmp/hotspot/hotspot.so
+      args: 1024 1024 2 4 ../utils/workloads/rodinia/data/hotspot/temp_1024 ../utils/workloads/rodinia/data/hotspot/power_1024 output.out
+    - name: hotspot3D
+      path: ./utils/workloads/rodinia/openmp/hotspot3D/3D.so
+      args: 512 8 100 ../utils/workloads/rodinia/data/hotspot3D/power_512x8 ../utils/workloads/rodinia/data/hotspot3D/temp_512x8 output.out
+    - name: kmeans
+      path: ./utils/workloads/rodinia/openmp/kmeans/kmeans_openmp/kmeans.so
+      args: -n 4 -i  -n 4 -i ../utils/workloads/rodinia/data/kmeans/kdd_cup
+    - name: lavaMD
+      path: ./utils/workloads/rodinia/openmp/lavaMD/lavaMD.so
+      args: -cores 4 -boxes1d 10
+    - name: lud
+      path: ./utils/workloads/rodinia/openmp/lud/omp/lud_omp.so
+      args: -s 8000
+    - name: myocyte
+      path: ./utils/workloads/rodinia/openmp/myocyte/myocyte.so
+      args: 100 1 0 4
+    - name: nn
+      path: ./utils/workloads/rodinia/openmp/nn/nn.so
+      args: ./utils/workloads/rodinia/openmp/nn/filelist_4 5 30 90
+    - name: needle
+      path: ./utils/workloads/rodinia/openmp/nw/needle.so
+      args: 2048 10 2
+    - name: particlefilter
+      path: ./utils/workloads/rodinia/openmp/particlefilter/particle_filter.so
+      args: -x 128 -y 128 -z 10 -np 10000
+    - name: pathfinder
+      path: ./utils/workloads/rodinia/openmp/pathfinder/pathfinder.so
+      args: 100000 100
+    - name: srad_v1
+      path: ./utils/workloads/rodinia/openmp/srad/srad_v1/srad.so
+      args: 100 0.5 502 458 4
+    - name: srad_v2
+      path: ./utils/workloads/rodinia/openmp/srad/srad_v2/srad.so
+      args: 2048 2048 0 127 0 127 2 0.5 2
+    - name: streamcluster
+      path: ./utils/workloads/rodinia/openmp/streamcluster/sc_cpu.so
+      args: 10 20 256 65536 65536 1000 none output.txt 4

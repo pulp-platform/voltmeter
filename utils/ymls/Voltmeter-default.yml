@@ -1,0 +1,47 @@
+# Copyright 2023 ETH Zurich and University of Bologna.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Author: Sergio Mazzola, ETH Zurich <smazzola@iis.ee.ethz.ch>
+
+# Voltmeter compilation parameters for target selection
+param-platform:
+  # PLATFORM can be: 'jetson_agx_xavier'
+  PLATFORM: jetson_agx_xavier
+  # activate profiling for CPU/GPU
+  PROFILE_CPU: True
+  PROFILE_GPU: True
+
+# Voltmeter compilation parameters for profiler settings
+param-profiler:
+  # number of benchmark replay, for averaging
+  NUM_RUN: 3
+  # profiler sampling period (in microsec)
+  SAMPLE_PERIOD_US: 100000
+
+# arguments for Voltmeter execution mode (see `install/voltmeter --help`)
+arguments:
+  # events can be: 'config', 'cli', 'all_events'
+  events: config
+  config_cpu: ./config/events_cpu.json
+  config_gpu: ./config/events_gpu.json
+  #cli_cpu: [0x08, 0x86, 0x12, 0x08, 0x86, 0x12, 0x08, 0x86, 0x12, 0x08, 0x86, 0x12, 0x08, 0x86, 0x12, 0x08, 0x86, 0x12, 0x08, 0x86, 0x12, 0x08, 0x86, 0x12]
+  #cli_gpu: [100663390, 100663391, 100663361]
+  # mode can be: 'characterization', 'profile', 'num_passes'
+  mode: profile
+  trace_dir: ./traces
+  benchmarks:
+    # name: label for the benchmark
+    # path: path (abs or rel) to the benchmark compiled as shared library:
+    #       `-o *.so -fPIC -shared` for local compiler, or
+    #       `-o *.so -shared -Xcompiler -fPIC` for GPU cross-compiler
+    # args: arguments to pass to the benchmark; every relative path passed
+    #       as argument must be relative to the ./install/voltmeter binary
+    - name: b+tree
+      path: ./utils/workloads/rodinia/openmp/b+tree/b+tree.so
+      args: core 2 file ../utils/workloads/rodinia/data/b+tree/mil.txt command ../utils/workloads/rodinia/data/b+tree/command.txt
+    - name: kmeans
+      path: ./utils/workloads/rodinia/openmp/kmeans/kmeans_openmp/kmeans.so
+    - name: backprop
+      path: ./utils/workloads/rodinia/openmp/backprop/backprop.so
+      args: 65536
