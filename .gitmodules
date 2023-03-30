@@ -1,0 +1,3 @@
+[submodule "utils/workloads"]
+	path = utils/workloads
+	url = git@iis-git.ee.ethz.ch:ampere/workloads.git
