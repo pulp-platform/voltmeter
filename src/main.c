@@ -314,6 +314,31 @@ int main(int argc, char *argv[]) {
         exit(1);
     }
 
+    // set up benchmark args
+    arguments.benchmark_args[0] = benchmark_path; // assign argv[0]
+    printf_file(log_file, "\n");
+    printf_file(log_file, "Running benchmark '%s' with %d argument(s).\n", benchmark_name, arguments.num_benchmark_args);
+    printf_file(log_file, "Benchmark arguments:\n");
+    for (int i = 0; i <= arguments.num_benchmark_args + 1; i++)
+      printf_file(log_file, "  argv[%d] = %s \n", i, arguments.benchmark_args[i]);
+
+    // copy in a buffer to prevent misuse by benchmarks
+    char **argv_bench = (char**) malloc((arguments.num_benchmark_args + 2) * sizeof(char*)); // +2 for argv[0] and NULL
+    if (argv_bench == NULL) {
+      printf("%s:%d: failed to allocate memory.\n", __FILE__, __LINE__);
+      exit(1);
+    }
+    for (int i = 0; i <= arguments.num_benchmark_args + 1; i++) {
+      if (i == arguments.num_benchmark_args + 1)
+        argv_bench[i] = (char*) malloc(1 * sizeof(char));
+      else
+        argv_bench[i] = (char*) malloc((strlen(arguments.benchmark_args[i]) + 1) * sizeof(char));
+      if (argv_bench[i] == NULL) {
+        printf("%s:%d: failed to allocate memory.\n", __FILE__, __LINE__);
+        exit(1);
+      }
+    }
+
     //////////////////////////////////
     // set up profiler and benchmark
     //////////////////////////////////
@@ -421,12 +446,6 @@ int main(int argc, char *argv[]) {
         }
 
         // run benchmark
-        arguments.benchmark_args[0] = benchmark_path; // assign argv[0]
-        printf_file(log_file, "\n");
-        printf_file(log_file, "Running benchmark '%s' with %d argument(s).\n", benchmark_name, arguments.num_benchmark_args);
-        printf_file(log_file, "Benchmark arguments:\n");
-        for (int i = 0; i <= arguments.num_benchmark_args + 1; i++)
-          printf_file(log_file, "  argv[%d] = %s \n", i, arguments.benchmark_args[i]);
         printf("\n");
         printf("--------------------------------------------------------------------------------\n");
         for (int r = 0; r < NUM_RUN; r++) {
@@ -443,8 +462,15 @@ int main(int argc, char *argv[]) {
           printf("]\n");
           printf("--------------------------------------------------------------------------------\n");
           printf("\n");
+          // refresh benchmark arguments in case benchmarks mess with them
+          for (int i = 0; i <= arguments.num_benchmark_args + 1; i++){
+            argv_bench[i] = arguments.benchmark_args[i];
+            printf("%s ", argv_bench[i]);
+          }
+          // reset getopt
+          optind = 1;
           // benchmarks needs to return with 'return' and not 'exit'
-          benchmark(arguments.num_benchmark_args + 1, arguments.benchmark_args);
+          benchmark(arguments.num_benchmark_args + 1, argv_bench);
           printf("\n");
           printf("--------------------------------------------------------------------------------\n");
         }
@@ -612,6 +638,7 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state){
         char *token = strtok(arg, ",");
         while (token != NULL) {
           arguments->num_benchmark_args++;
+          // +2 for argv[0] and NULL
           arguments->benchmark_args = realloc(arguments->benchmark_args, (arguments->num_benchmark_args + 2) * sizeof(char*));
           if (arguments->benchmark_args == NULL){
             printf("%s:%d: realloc failed.\n", __FILE__, __LINE__);
