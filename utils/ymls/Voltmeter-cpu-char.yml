@@ -51,9 +51,6 @@ arguments:
     - name: myocyte
       path: ./utils/workloads/rodinia/openmp/myocyte/myocyte.so
       args: 100 1 0 4
-    - name: nn
-      path: ./utils/workloads/rodinia/openmp/nn/nn.so
-      args: ./utils/workloads/rodinia/openmp/nn/filelist_4 5 30 90
     - name: needle
       path: ./utils/workloads/rodinia/openmp/nw/needle.so
       args: 2048 10 2
@@ -63,9 +60,6 @@ arguments:
     - name: pathfinder
       path: ./utils/workloads/rodinia/openmp/pathfinder/pathfinder.so
       args: 100000 100
-    - name: srad_v1
-      path: ./utils/workloads/rodinia/openmp/srad/srad_v1/srad.so
-      args: 100 0.5 502 458 4
     - name: srad_v2
       path: ./utils/workloads/rodinia/openmp/srad/srad_v2/srad.so
       args: 2048 2048 0 127 0 127 2 0.5 2

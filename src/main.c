@@ -319,7 +319,7 @@ int main(int argc, char *argv[]) {
     printf_file(log_file, "\n");
     printf_file(log_file, "Running benchmark '%s' with %d argument(s).\n", benchmark_name, arguments.num_benchmark_args);
     printf_file(log_file, "Benchmark arguments:\n");
-    for (int i = 0; i <= arguments.num_benchmark_args + 1; i++)
+    for (int i = 0; i < arguments.num_benchmark_args + 2; i++)
       printf_file(log_file, "  argv[%d] = %s \n", i, arguments.benchmark_args[i]);
 
     // copy in a buffer to prevent misuse by benchmarks
@@ -328,11 +328,8 @@ int main(int argc, char *argv[]) {
       printf("%s:%d: failed to allocate memory.\n", __FILE__, __LINE__);
       exit(1);
     }
-    for (int i = 0; i <= arguments.num_benchmark_args + 1; i++) {
-      if (i == arguments.num_benchmark_args + 1)
-        argv_bench[i] = (char*) malloc(1 * sizeof(char));
-      else
-        argv_bench[i] = (char*) malloc((strlen(arguments.benchmark_args[i]) + 1) * sizeof(char));
+    for (int i = 0; i < arguments.num_benchmark_args + 1; i++) {
+      argv_bench[i] = (char*) malloc((strlen(arguments.benchmark_args[i]) + 1) * sizeof(char));
       if (argv_bench[i] == NULL) {
         printf("%s:%d: failed to allocate memory.\n", __FILE__, __LINE__);
         exit(1);
@@ -461,12 +458,14 @@ int main(int argc, char *argv[]) {
 #endif
           printf("]\n");
           printf("--------------------------------------------------------------------------------\n");
-          printf("\n");
           // refresh benchmark arguments in case benchmarks mess with them
-          for (int i = 0; i <= arguments.num_benchmark_args + 1; i++){
-            argv_bench[i] = arguments.benchmark_args[i];
+          for (int i = 0; i < arguments.num_benchmark_args + 1; i++){
+            strcpy(argv_bench[i], arguments.benchmark_args[i]);
             printf("%s ", argv_bench[i]);
           }
+          argv_bench[arguments.num_benchmark_args + 1] = NULL; // NULL terminates argv array
+          printf("\n");
+          printf("\n");
           // reset getopt
           optind = 1;
           // benchmarks needs to return with 'return' and not 'exit'
