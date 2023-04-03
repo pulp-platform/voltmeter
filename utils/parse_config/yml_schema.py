@@ -17,13 +17,47 @@
             },
             'profile_cpu': {
                 'required': True,
+                'anyof': [
+                    {'dependencies': {'profile_cpu': False}},
+                    {'allof': [
+                        {'dependencies': {'profile_cpu': True}},
+                        {'dependencies': ['frequencies_cpu']}
+                    ]}
+                ],
                 'type': 'boolean',
                 'default': False
             },
             'profile_gpu': {
                 'required': True,
+                'anyof': [
+                    {'dependencies': {'profile_gpu': False}},
+                    {'allof': [
+                        {'dependencies': {'profile_gpu': True}},
+                        {'dependencies': ['frequencies_gpu']}
+                    ]}
+                ],
                 'type': 'boolean',
                 'default': False
+            },
+            'frequencies_cpu': {
+                'dependencies': {'profile_cpu': True},
+                'type': 'list',
+                'nullable': False,
+                'empty': False,
+                'schema': {
+                    'type': 'integer',
+                    'min': 1
+                }
+            },
+            'frequencies_gpu': {
+                'dependencies': {'profile_gpu': True},
+                'type': 'list',
+                'nullable': False,
+                'empty': False,
+                'schema': {
+                    'type': 'integer',
+                    'min': 1
+                }
             }
         }
     },

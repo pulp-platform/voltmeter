@@ -26,6 +26,7 @@ ifeq ($(platform),jetson_agx_xavier)
 ifndef CUDA_PATH
 CUDA_PATH := /usr/local/cuda
 endif
+SCRIPTS_DIR := $(UTILS_DIR)/jetson_agx_xavier
 endif
 
 # extension of files to lint with clang-format

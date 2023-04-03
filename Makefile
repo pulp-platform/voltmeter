@@ -12,12 +12,28 @@ all: voltmeter
 run: voltmeter kernelmod
 	@mkdir -p $(TRACE_DIR)
 	@cd $(INSTALL_DIR); \
-	while read benchmark; do \
-		echo $(INSTALL_DIR)/voltmeter $(VOLTMETER_ARGS) $$benchmark; \
-		$(INSTALL_DIR)/voltmeter $(VOLTMETER_ARGS) $$benchmark || exit 1; \
-	done <<< $(BENCHMARKS)
+	$(SCRIPTS_DIR)/set_power_max.sh; \
+	frequencies_cpu=($(frequencies_cpu)); \
+	frequencies_gpu=($(frequencies_gpu)); \
+	if [ -z "$$frequencies_cpu" ]; then \
+		frequencies_cpu=(max); \
+	fi; \
+	if [ -z "$$frequencies_gpu" ]; then \
+		frequencies_gpu=(max); \
+	fi; \
+	for freq_cpu in $${frequencies_cpu[@]}; do \
+		$(SCRIPTS_DIR)/set_freq_cpu.sh $$freq_cpu; \
+		for freq_gpu in $${frequencies_gpu[@]}; do \
+			$(SCRIPTS_DIR)/set_freq_gpu.sh $$freq_gpu; \
+			jetson_clocks --show; \
+			while read benchmark; do \
+				echo $(INSTALL_DIR)/voltmeter $(voltmeter_args) $$benchmark; \
+				$(INSTALL_DIR)/voltmeter $(voltmeter_args) $$benchmark || exit 1; \
+			done <<< $(benchmarks); \
+		done; \
+	done
 
-# compile voltmeter (run without sudo)
+# compile voltmeter
 voltmeter: $(VOLTMETER_MK)
 	mkdir -p $(INSTALL_DIR)
 	$(MAKE) -C $(SRC_DIR) all

@@ -14,13 +14,13 @@ kmod = $(name).ko
 all: $(kmod)
 
 $(kmod): $(name).c
-	make ARCH=arm64 -C $(KERNEL_SOURCE) M=$(abspath $(shell git rev-parse --show-toplevel 2>/dev/null))/utils/carmel-module modules
+	make ARCH=arm64 -C $(KERNEL_SOURCE) M=$(shell git rev-parse --show-toplevel 2>/dev/null)/utils/carmel-module modules
 
 install: $(kmod)
 	sudo insmod $<
 	sudo touch install
 
 clean:
-	make ARCH=arm64 -C $(KERNEL_SOURCE) M=$(abspath $(shell git rev-parse --show-toplevel 2>/dev/null))/utils/carmel-module clean
+	make ARCH=arm64 -C $(KERNEL_SOURCE) M=$(shell git rev-parse --show-toplevel 2>/dev/null)/utils/carmel-module clean
 	sudo rm -f install
 	sudo rmmod $(kmod) || true

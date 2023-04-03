@@ -11,6 +11,9 @@ param-platform:
   # activate profiling for CPU/GPU
   profile_cpu: True
   profile_gpu: True
+  # CPU/GPU frequencies to profile (in the unit required by the platform)
+  frequencies_cpu: [115200, 729600, 1267200, 2265600]
+  frequencies_gpu: [114750000, 522750000, 1198500000, 1377000000]
 
 # Voltmeter compilation parameters for profiler settings
 param-profiler:

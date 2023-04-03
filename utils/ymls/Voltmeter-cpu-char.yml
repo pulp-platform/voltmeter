@@ -8,6 +8,7 @@ param-platform:
   platform: jetson_agx_xavier
   profile_cpu: True
   profile_gpu: False
+  frequencies_cpu: [115200, 192000, 268800, 345600, 422400, 499200, 576000, 652800, 729600, 806400, 883200, 960000, 1036800, 1113600, 1190400, 1267200, 1344000, 1420800, 1497600, 1574400, 1651200, 1728000, 1804800, 1881600, 1958400, 2035200, 2112000, 2188800, 2265600]
 
 param-profiler:
   num_run: 2
@@ -29,7 +30,7 @@ arguments:
       args: 4 ../utils/workloads/rodinia/data/bfs/graph1MW_6.txt
     - name: euler3d_cpu_double
       path: ./utils/workloads/rodinia/openmp/cfd/euler3d_cpu_double.so
-      args: ../utils/workloads/rodinia/data/cfd/fvcorr.domn.193K
+      args: ../utils/workloads/rodinia/data/cfd/fvcorr.domn.097K
     - name: heartwall
       path: ./utils/workloads/rodinia/openmp/heartwall/heartwall.so
       args: ../utils/workloads/rodinia/data/heartwall/test.avi 20 4

@@ -8,6 +8,7 @@ param-platform:
   platform: jetson_agx_xavier
   profile_cpu: False
   profile_gpu: True
+  frequencies_gpu: [114750000, 216750000, 318750000, 420750000, 522750000, 624750000, 675750000, 828750000, 905250000, 1032750000, 1198500000, 1236750000, 1338750000, 1377000000]
 
 param-profiler:
   num_run: 2
