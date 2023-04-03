@@ -24,6 +24,7 @@
 #include <argp.h>
 #include <pthread.h>
 #include <unistd.h>
+#include <time.h>
 #include <dlfcn.h>
 #include <sched.h>
 // voltmeter libraries
@@ -104,6 +105,8 @@ extern cpu_events_freq_config_t cpu_events;
  */
 
 int main(int argc, char *argv[]) {
+  struct timespec timestamp_a, timestamp_b;
+  clock_gettime(CLOCK_REALTIME, &timestamp_a);
 
 /*
  * ┌───────────────────────────────────────────────────────┐
@@ -137,30 +140,18 @@ int main(int argc, char *argv[]) {
  */
 
   unsigned int log_i = 0;
-  char log_file_name[50] = {'\0'};
-  char *log_file_path = NULL;
-  do {
-    if (log_i)
-      sprintf(log_file_name, "%s_%u.log", LOG_FILE_NAME, log_i); // add suffix if != 0
-    else
-      sprintf(log_file_name, "%s.log", LOG_FILE_NAME);
-    // allocate memory for trace path
-    log_file_path = realloc(log_file_path, strlen(arguments.trace_dir) + strlen(log_file_name) + 10);
-    if (log_file_path == NULL){
-      printf("%s:%d: failed to allocate memory.\n", __FILE__, __LINE__);
-      exit(1);
-    }
-    // join trace_dir and trace_name
-    cat_path(arguments.trace_dir, log_file_name, log_file_path);
-    log_i++;
-  } while(access(log_file_path, F_OK) != -1);
-
+  char log_file_name[] = "log.temp";
+  char *log_file_path = (char*)malloc(strlen(arguments.trace_dir) + strlen(log_file_name) + 10);
+  if (log_file_path == NULL){
+    printf("%s:%d: failed to allocate memory.\n", __FILE__, __LINE__);
+    exit(1);
+  }
+  cat_path(arguments.trace_dir, log_file_name, log_file_path);
   FILE *log_file = fopen(log_file_path, "w");
   if (log_file == NULL) {
     printf("%s:%d: failed to open log file.\n", __FILE__, __LINE__);
     exit(1);
   }
-  free(log_file_path);
 
   // print all arguments parsed by argp
   printf_file(log_file, "\n════════════════════════════════════════════════════════════════════════════════\n");
@@ -294,6 +285,9 @@ int main(int argc, char *argv[]) {
 
   if (arguments.mode == CHARACTERIZATION || arguments.mode == PROFILE){
 
+    unsigned int trace_i = 0;
+    unsigned int trace_first_i;
+    int trace_first_i_set = 0;
     // strip path from arguments.benchmark
     char *benchmark_path = strdup(arguments.benchmark);
     char *benchmark_name = path_basename(arguments.benchmark);
@@ -355,7 +349,6 @@ int main(int argc, char *argv[]) {
         char *trace_path = NULL;
 
         // generate trace name
-        unsigned int trace_i = 0;
         char trace_name[150] = {'\0'};
         do {
           // this loop creates numbered traces if benchmarks with same name are profiled:
@@ -368,8 +361,7 @@ int main(int argc, char *argv[]) {
 #if GPU
           sprintf(trace_name + strlen(trace_name), "_gpu_%u", gpu_freq);
 #endif
-          if (trace_i)
-            sprintf(trace_name + strlen(trace_name), "_%u", trace_i); // add suffix if != 0
+          sprintf(trace_name + strlen(trace_name), "_%u", trace_i);
           sprintf(trace_name + strlen(trace_name), ".bin");
           // allocate memory for trace path
           trace_path = realloc(trace_path, strlen(arguments.trace_dir) + strlen(trace_name) + 10);
@@ -381,6 +373,10 @@ int main(int argc, char *argv[]) {
           cat_path(arguments.trace_dir, trace_name, trace_path);
           trace_i++;
         } while(access(trace_path, F_OK) != -1);
+        if (!trace_first_i_set) {
+          trace_first_i = trace_i - 1;
+          trace_first_i_set = 1;
+        }
         printf_file(log_file, "\nTrace path: %s\n", trace_path);
         // open trace file
         trace_file = fopen(trace_path, "wb");
@@ -443,20 +439,21 @@ int main(int argc, char *argv[]) {
         }
 
         // run benchmark
-        printf("\n");
-        printf("--------------------------------------------------------------------------------\n");
+        printf_file(log_file, "\n");
+        printf_file(log_file, "--------------------------------------------------------------------------------\n");
         for (int r = 0; r < NUM_RUN; r++) {
-          printf(" Benchmark pass %d/%d [", r + 1, NUM_RUN);
+          printf_file(log_file, " [");
 #if CPU
-          printf("CPU pass %d/%d", cpu_p + 1, num_pass_cpu);
+          printf_file(log_file, "CPU pass %d/%d", cpu_p + 1, num_pass_cpu);
 #endif
 #if CPU && GPU
-          printf(" | ");
+          printf_file(log_file, " | ");
 #endif
 #if GPU
-          printf("GPU pass %d/%d", gpu_p + 1, num_pass_gpu);
+          printf_file(log_file, "GPU pass %d/%d", gpu_p + 1, num_pass_gpu);
 #endif
-          printf("]\n");
+          printf_file(log_file, "]");
+          printf_file(log_file, " Benchmark pass %d/%d\n", r + 1, NUM_RUN);
           printf("--------------------------------------------------------------------------------\n");
           // refresh benchmark arguments in case benchmarks mess with them
           for (int i = 0; i < arguments.num_benchmark_args + 1; i++){
@@ -471,7 +468,7 @@ int main(int argc, char *argv[]) {
           // benchmarks needs to return with 'return' and not 'exit'
           benchmark(arguments.num_benchmark_args + 1, argv_bench);
           printf("\n");
-          printf("--------------------------------------------------------------------------------\n");
+          printf_file(log_file, "--------------------------------------------------------------------------------\n");
         }
         printf("\n");
         // signal profiler threads to stop
@@ -513,6 +510,39 @@ int main(int argc, char *argv[]) {
       printf("%s:%d: benchmark %s cannot be run.\n", __FILE__, __LINE__, benchmark_path);
       exit(1);
     }
+
+    // manage log file: rename to indicate to which traces it refers to
+    fclose(log_file);
+    char log_rename[100] = {'\0'};
+    sprintf(log_rename, "%s", benchmark_name);
+    #if CPU
+    sprintf(log_rename + strlen(log_rename), "_cpu_%u", cpu_freq);
+    #endif
+    #if GPU
+    sprintf(log_rename + strlen(log_rename), "_gpu_%u", gpu_freq);
+    #endif
+    if (--trace_i == trace_first_i)
+      sprintf(log_rename + strlen(log_rename), "_%u.log", trace_first_i); // if only 1 trace
+    else
+      sprintf(log_rename + strlen(log_rename), "_%u-%u.log", trace_first_i, trace_i); // if more than 1 trace
+    char *log_path_rename = malloc(strlen(arguments.trace_dir) + strlen(log_rename) + 10);
+    if (log_path_rename == NULL){
+      printf("%s:%d: failed to allocate memory.\n", __FILE__, __LINE__);
+      exit(1);
+    }
+    cat_path(arguments.trace_dir, log_rename, log_path_rename);
+    int ret = rename(log_file_path, log_path_rename);
+    if (ret) {
+      printf("%s:%d: failed to rename log file %s.\n", __FILE__, __LINE__, log_file_path);
+      exit(1);
+    }
+    log_file = fopen(log_path_rename, "a");
+    if (log_file == NULL) {
+      printf("%s:%d: failed to open log file.\n", __FILE__, __LINE__);
+      exit(1);
+    }
+    free(log_path_rename);
+    free(log_file_path);
   }
 
 /*
@@ -521,8 +551,18 @@ int main(int argc, char *argv[]) {
  * └───────────────────────────────────────────────────────┘
  */
 
+  // print time
+  clock_gettime(CLOCK_REALTIME, &timestamp_b);
+  double sampling_time = (double)((timestamp_b.tv_sec - timestamp_a.tv_sec) * 1e9 + (timestamp_b.tv_nsec - timestamp_a.tv_nsec)) / 1e9;
+  if (sampling_time < 60) {
+    printf_file(log_file, "\nVoltmeter run took %.2f s\n", sampling_time);
+  } else {
+    printf_file(log_file, "\nVoltmeter run took %d m, %.2f s (%.2f s)\n", (unsigned long int)sampling_time/60, sampling_time - (unsigned long int)sampling_time/60);
+  }
+  printf_file(log_file, "Exiting...\n\n\n");
+
+  // de-init
   deinit_platform();
-  fclose(log_file);
 #if CPU
   free(arguments.cli_cpu);
   deinit_cpu();
@@ -532,6 +572,14 @@ int main(int argc, char *argv[]) {
 #endif
 
   if (arguments.mode == NUM_PASSES){
+    // remove log_file, not required for NUM_PASSES
+    fclose(log_file);
+    int ret = remove(log_file_path);
+    if (ret){
+      printf("%s:%d: failed to delete unused log file %s.\n", __FILE__, __LINE__, log_file_path);
+      exit(1);
+    }
+    free(log_file_path);
 #if CPU
     printf("%s:%d: 'num_passes' mode is not supported for CPU.\n", __FILE__, __LINE__);
     exit(1);
@@ -540,6 +588,7 @@ int main(int argc, char *argv[]) {
     return num_pass_gpu;
 #endif
   }
+
   return 0;
 }
 
