@@ -7,17 +7,17 @@
 # Voltmeter compilation parameters for target selection
 param-platform:
   # PLATFORM can be: 'jetson_agx_xavier'
-  PLATFORM: jetson_agx_xavier
+  platform: jetson_agx_xavier
   # activate profiling for CPU/GPU
-  PROFILE_CPU: True
-  PROFILE_GPU: True
+  profile_cpu: True
+  profile_gpu: True
 
 # Voltmeter compilation parameters for profiler settings
 param-profiler:
   # number of benchmark replay, for averaging
-  NUM_RUN: 3
+  num_run: 3
   # profiler sampling period (in microsec)
-  SAMPLE_PERIOD_US: 100000
+  sample_period_us: 100000
 
 # arguments for Voltmeter execution mode (see `install/voltmeter --help`)
 arguments:

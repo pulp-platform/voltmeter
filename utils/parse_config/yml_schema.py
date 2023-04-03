@@ -10,17 +10,17 @@
         'required': True,
         'type': 'dict',
         'schema': {
-            'PLATFORM': {
+            'platform': {
                 'required': True,
                 'type': 'string',
                 'allowed': ['jetson_agx_xavier']
             },
-            'PROFILE_CPU': {
+            'profile_cpu': {
                 'required': True,
                 'type': 'boolean',
                 'default': False
             },
-            'PROFILE_GPU': {
+            'profile_gpu': {
                 'required': True,
                 'type': 'boolean',
                 'default': False
@@ -31,13 +31,13 @@
         'required': True,
         'type': 'dict',
         'schema': {
-            'NUM_RUN': {
+            'num_run': {
                 'required': True,
                 'type': 'integer',
                 'default': 3,
                 'min': 1
             },
-            'SAMPLE_PERIOD_US': {
+            'sample_period_us': {
                 'required': True,
                 'type': 'integer',
                 'default': 100000,

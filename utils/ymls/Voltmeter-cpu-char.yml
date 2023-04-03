@@ -5,13 +5,13 @@
 # Author: Sergio Mazzola, ETH Zurich <smazzola@iis.ee.ethz.ch>
 
 param-platform:
-  PLATFORM: jetson_agx_xavier
-  PROFILE_CPU: True
-  PROFILE_GPU: False
+  platform: jetson_agx_xavier
+  profile_cpu: True
+  profile_gpu: False
 
 param-profiler:
-  NUM_RUN: 2
-  SAMPLE_PERIOD_US: 100000
+  num_run: 2
+  sample_period_us: 100000
 
 arguments:
   events: all_events

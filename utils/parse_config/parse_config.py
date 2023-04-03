@@ -110,7 +110,7 @@ if __name__ == '__main__':
                 # passed as a string to the shell (i.e., surrounded by ''); a shell 'for' loop can
                 # differentiate the different iterable elements thanks to the character '\n'; the
                 # '\\\n' are only used to make the voltmeter.mk more readable
-                f.write('BENCHMARKS := $$\' \\\n')
+                f.write('benchmarks := $$\' \\\n')
                 for b in config['arguments']['benchmarks'][:-1]:
                     f.write('\t--benchmark={}'.format(b['path']))
                     if 'args' in b and b['args'] is not None:
@@ -124,7 +124,7 @@ if __name__ == '__main__':
                 f.write(' \\\n\'\n')
             # command-line events
             elif key[:4] == 'cli_':
-                f.write('VOLTMETER_ARGS += --{}={}\n'.format(key, ','.join(map(str, config['arguments'][key]))))
+                f.write('voltmeter_args += --{}={}\n'.format(key, ','.join(map(str, config['arguments'][key]))))
             # other arguments
             else:
-                f.write('VOLTMETER_ARGS += --{}={}\n'.format(key, config['arguments'][key]))
+                f.write('voltmeter_args += --{}={}\n'.format(key, config['arguments'][key]))

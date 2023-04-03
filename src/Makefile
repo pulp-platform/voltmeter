@@ -18,17 +18,18 @@ DEPS := $(OBJS:.o=.d)
 
 # general includes
 INC_DIRS += $(shell find $(SRC_DIR) -path $(BUILD_DIR) -prune -o -type d -print)
+INC_DIRS += $(includes)
 # general libraries
-LIB_DIRS +=
+LIB_DIRS += $(libraries)
 LIBS     += -ldl -lm
 # general flags
 FLAGS    += -MMD -MP -pthread -D_GNU_SOURCE
 # general defines
-DEFINES  += -DCPU=$(PROFILE_CPU) -DGPU=$(PROFILE_GPU)
-DEFINES  += -DNUM_RUN=$(NUM_RUN) -DSAMPLE_PERIOD_US=$(SAMPLE_PERIOD_US)
+DEFINES  += -DCPU=$(profile_cpu) -DGPU=$(profile_gpu)
+DEFINES  += -DNUM_RUN=$(num_run) -DSAMPLE_PERIOD_US=$(sample_period_us)
 
 # platform-specific
-ifeq ($(PLATFORM),jetson_agx_xavier)
+ifeq ($(platform),jetson_agx_xavier)
 INC_DIRS += $(CUDA_PATH)/../include $(CUDA_PATH)/include
 LIB_DIRS += $(CUDA_PATH)/../lib64 $(CUDA_PATH)/lib64
 LIBS     += -lcuda -lcudart -lcupti
