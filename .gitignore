@@ -1,5 +1,3 @@
-src/build
-config/voltmeter.mk
 install
 **/traces*
 **/.vscode

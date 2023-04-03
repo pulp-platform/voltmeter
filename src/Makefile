@@ -7,8 +7,7 @@
 include ../config/config.mk
 
 # target
-TARGET := voltmeter
-TARGET := $(addprefix $(INSTALL_DIR)/,$(TARGET))
+TARGET := $(VOLTMETER_BIN)
 BUILD_DIR ?= $(SRC_DIR)/build
 
 # source
@@ -50,13 +49,9 @@ $(TARGET): $(OBJS)
 	$(CC) $(OBJS) -o $@ $(LDFLAGS) $(CFLAGS)
 
 # C source
-$(BUILD_DIR)/%.o: %.c $(CONFIG_DIR)/config.mk $(VOLTMETER_YML) $(VOLTMETER_MK)
+$(BUILD_DIR)/%.o: %.c $(CONFIG_DIR)/config.mk $(VOLTMETER_MK)
 	mkdir -p $(dir $@)
 	$(CC) -c $< -o $@ $(CFLAGS)
-
-# config
-$(VOLTMETER_MK):
-	$(MAKE) -C $(ROOT_DIR) $(VOLTMETER_MK)
 
 .PHONY: clean
 

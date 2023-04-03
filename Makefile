@@ -6,10 +6,10 @@
 
 include ./config/config.mk
 
-all: voltmeter
+all: $(VOLTMETER_BIN)
 
 # run voltmeter (run with sudo)
-run: voltmeter kernelmod
+run: $(VOLTMETER_BIN) $(VOLTMETER_MK) kernelmod
 	@mkdir -p $(TRACE_DIR)
 	@cd $(INSTALL_DIR); \
 	$(SCRIPTS_DIR)/set_power_max.sh; \
@@ -27,14 +27,14 @@ run: voltmeter kernelmod
 			$(SCRIPTS_DIR)/set_freq_gpu.sh $$freq_gpu; \
 			jetson_clocks --show; \
 			while read benchmark; do \
-				echo $(INSTALL_DIR)/voltmeter $(voltmeter_args) $$benchmark; \
-				$(INSTALL_DIR)/voltmeter $(voltmeter_args) $$benchmark || exit 1; \
+				echo $(VOLTMETER_BIN) $(voltmeter_args) $$benchmark; \
+				$(VOLTMETER_BIN) $(voltmeter_args) $$benchmark || exit 1; \
 			done <<< $(benchmarks); \
 		done; \
 	done
 
 # compile voltmeter
-voltmeter: $(VOLTMETER_MK)
+$(VOLTMETER_BIN): $(VOLTMETER_MK)
 	mkdir -p $(INSTALL_DIR)
 	$(MAKE) -C $(SRC_DIR) all
 
@@ -51,8 +51,9 @@ kernelmod:
 clean:
 	sudo $(MAKE) -C $(SRC_DIR) clean
 	sudo $(MAKE) -C $(UTILS_DIR)/carmel-module clean
-	$(RM) -r $(INSTALL_DIR)
+	sudo $(RM) -r $(INSTALL_DIR)
 	$(RM) $(VOLTMETER_MK)
 
 clean_traces:
 	sudo $(RM) -r $(TRACE_DIR)
+	sudo $(RM) -r $(ROOT_DIR)/traces*

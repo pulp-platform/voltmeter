@@ -4,7 +4,7 @@
 #
 # Author: Sergio Mazzola, ETH Zurich <smazzola@iis.ee.ethz.ch>
 
-# Schema to validate config/voltmeter.yml config
+# Schema to validate Voltmeter YML manifest file config
 {
     'param-platform': {
         'required': True,

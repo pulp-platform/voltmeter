@@ -13,13 +13,15 @@ SRC_DIR     := $(ROOT_DIR)/src
 UTILS_DIR   := $(ROOT_DIR)/utils
 INSTALL_DIR := $(ROOT_DIR)/install
 # files
-VOLTMETER_YML := $(ROOT_DIR)/Voltmeter.yml
-VOLTMETER_MK  := $(CONFIG_DIR)/voltmeter.mk
+VOLTMETER_YML ?= $(ROOT_DIR)/Voltmeter.yml # default Manifest (can be changed!)
+VOLTMETER     := $(shell echo "$(basename $(notdir $(VOLTMETER_YML)))" | tr A-Z a-z)
+VOLTMETER_MK  := $(CONFIG_DIR)/$(VOLTMETER).mk
+VOLTMETER_BIN := $(INSTALL_DIR)/$(VOLTMETER)
 
 -include $(VOLTMETER_MK)
 
 # more directories
-TRACE_DIR   ?= $(trace_dir)
+TRACE_DIR ?= $(trace_dir)
 
 # platform-specific
 ifeq ($(platform),jetson_agx_xavier)

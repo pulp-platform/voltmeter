@@ -1,0 +1,4 @@
+# all makefrags parsed from YML manifest...
+*.mk
+# ...but config.mk
+!config.mk
