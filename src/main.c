@@ -557,7 +557,7 @@ int main(int argc, char *argv[]) {
   if (sampling_time < 60) {
     printf_file(log_file, "\nVoltmeter run took %.2f s\n", sampling_time);
   } else {
-    printf_file(log_file, "\nVoltmeter run took %d m, %.2f s (%.2f s)\n", (unsigned long int)sampling_time/60, sampling_time - (unsigned long int)sampling_time/60);
+    printf_file(log_file, "\nVoltmeter run took %d m, %d s (%.2f s)\n", (unsigned long int)sampling_time/60, (int)sampling_time % 60, sampling_time);
   }
   printf_file(log_file, "Exiting...\n\n\n");
 
@@ -735,6 +735,16 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state){
           argp_failure(state, 1, 0, "missing required argument for option --trace_dir. See --help for more information.");
         if (arguments->benchmark == NULL)
           argp_failure(state, 1, 0, "missing required argument for option --benchmark. See --help for more information.");
+      }
+      // check benchmark arguments
+      if (arguments->benchmark_args == NULL) {
+        // handle if benchmark has no arguments: for argv[0] and NULL
+        arguments->num_benchmark_args = 0;
+        arguments->benchmark_args = malloc(2 * sizeof(char*));
+        if (arguments->benchmark_args == NULL){
+          printf("%s:%d: failed to allocate memory.\n", __FILE__, __LINE__);
+          exit(1);
+        }
       }
       break;
     default:
