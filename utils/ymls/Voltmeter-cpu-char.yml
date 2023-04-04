@@ -19,51 +19,51 @@ arguments:
   mode: characterization
   trace_dir: ./traces-cpu-char
   benchmarks:
-    - name: b+tree
-      path: ./utils/workloads/rodinia/openmp/b+tree/b+tree.so
-      args: core 2 file ../utils/workloads/rodinia/data/b+tree/mil.txt command ../utils/workloads/rodinia/data/b+tree/command.txt
     - name: backprop
       path: ./utils/workloads/rodinia/openmp/backprop/backprop.so
-      args: 65536
+      args: 536870912
     - name: bfs
       path: ./utils/workloads/rodinia/openmp/bfs/bfs.so
-      args: 4 ../utils/workloads/rodinia/data/bfs/graph1MW_6.txt
+      args: 8 ../utils/workloads/rodinia/data/bfs/graph16M.txt
     - name: euler3d_cpu_double
       path: ./utils/workloads/rodinia/openmp/cfd/euler3d_cpu_double.so
-      args: ../utils/workloads/rodinia/data/cfd/fvcorr.domn.097K
+      args: ../utils/workloads/rodinia/data/cfd/missile.domn.0.5M
     - name: heartwall
       path: ./utils/workloads/rodinia/openmp/heartwall/heartwall.so
-      args: ../utils/workloads/rodinia/data/heartwall/test.avi 20 4
+      args: ../utils/workloads/rodinia/data/heartwall/test.avi 104 8
     - name: hotspot
       path: ./utils/workloads/rodinia/openmp/hotspot/hotspot.so
-      args: 1024 1024 2 4 ../utils/workloads/rodinia/data/hotspot/temp_1024 ../utils/workloads/rodinia/data/hotspot/power_1024 output.out
+      args: 8192 8192 6 8 ../utils/workloads/rodinia/data/hotspot/temp_8192 ../utils/workloads/rodinia/data/hotspot/power_8192 output.out
     - name: hotspot3D
       path: ./utils/workloads/rodinia/openmp/hotspot3D/3D.so
-      args: 512 8 100 ../utils/workloads/rodinia/data/hotspot3D/power_512x8 ../utils/workloads/rodinia/data/hotspot3D/temp_512x8 output.out
+      args: 512 8 5000 ../utils/workloads/rodinia/data/hotspot3D/power_512x8 ../utils/workloads/rodinia/data/hotspot3D/temp_512x8 output.out
     - name: kmeans
       path: ./utils/workloads/rodinia/openmp/kmeans/kmeans_openmp/kmeans.so
-      args: -n 4 -i  -n 4 -i ../utils/workloads/rodinia/data/kmeans/kdd_cup
+      args: -n 8 -i ../utils/workloads/rodinia/data/kmeans/3000000_34.txt
     - name: lavaMD
       path: ./utils/workloads/rodinia/openmp/lavaMD/lavaMD.so
-      args: -cores 4 -boxes1d 10
+      args: -cores 8 -boxes1d 35
+    - name: leukocyte
+      path: ./utils/workloads/rodinia/openmp/leukocyte/OpenMP/leukocyte.so
+      args: 100 8 ../utils/workloads/rodinia/data/leukocyte/testfile.avi
     - name: lud
       path: ./utils/workloads/rodinia/openmp/lud/omp/lud_omp.so
-      args: -s 8000
+      args: -n 8 -s 16384
     - name: myocyte
       path: ./utils/workloads/rodinia/openmp/myocyte/myocyte.so
-      args: 100 1 0 4
+      args: 150000 16 1 8
     - name: needle
       path: ./utils/workloads/rodinia/openmp/nw/needle.so
-      args: 2048 10 2
+      args: 40000 5 8
     - name: particlefilter
       path: ./utils/workloads/rodinia/openmp/particlefilter/particle_filter.so
-      args: -x 128 -y 128 -z 10 -np 10000
+      args: -x 512 -y 512 -z 100 -np 100000
     - name: pathfinder
       path: ./utils/workloads/rodinia/openmp/pathfinder/pathfinder.so
-      args: 100000 100
-    - name: srad_v2
+      args: 3000000 100
+    - name: srad
       path: ./utils/workloads/rodinia/openmp/srad/srad_v2/srad.so
-      args: 2048 2048 0 127 0 127 2 0.5 2
+      args: 32768 32768 0 2048 0 2048 8 0.5 10
     - name: streamcluster
       path: ./utils/workloads/rodinia/openmp/streamcluster/sc_cpu.so
-      args: 10 20 256 65536 65536 1000 none output.txt 4
+      args: 15 30 512 131072 131072 1000 none output.txt 8
