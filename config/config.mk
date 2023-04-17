@@ -32,5 +32,3 @@ PLATFORM_DIR := $(UTILS_DIR)/jetson_agx_xavier
 endif
 
 # extension of files to lint with clang-format
-#TODO: Implement check (with clang lint or editorconfig checker)
-CLANG_FORMAT_EXT := c,h,C,H,cpp,hpp,cc,hh,c++,h++,cxx,hxx,cu
