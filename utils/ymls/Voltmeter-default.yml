@@ -40,11 +40,9 @@ arguments:
     #       `-o *.so -shared -Xcompiler -fPIC` for GPU cross-compiler
     # args: arguments to pass to the benchmark; every relative path passed
     #       as argument must be relative to the ./install/voltmeter binary
-    - name: b+tree
-      path: ./utils/workloads/rodinia/openmp/b+tree/b+tree.so
-      args: core 2 file ../utils/workloads/rodinia/data/b+tree/mil.txt command ../utils/workloads/rodinia/data/b+tree/command.txt
-    - name: kmeans
-      path: ./utils/workloads/rodinia/openmp/kmeans/kmeans_openmp/kmeans.so
     - name: backprop
       path: ./utils/workloads/rodinia/openmp/backprop/backprop.so
-      args: 65536
+      args: 536870912
+    - name: bfs
+      path: ./utils/workloads/rodinia/openmp/bfs/bfs.so
+      args: 8 ../utils/workloads/rodinia/data/bfs/graph16M.txt

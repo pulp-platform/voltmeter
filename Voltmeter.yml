@@ -6,39 +6,43 @@
 
 # Voltmeter compilation parameters for target selection
 param-platform:
-  # PLATFORM can be: `jetson_agx_xavier`
-  PLATFORM: jetson_agx_xavier
+  # PLATFORM can be: 'jetson_agx_xavier'
+  platform: jetson_agx_xavier
   # activate profiling for CPU/GPU
-  PROFILE_CPU: True
-  PROFILE_GPU: True
+  profile_cpu: True
+  profile_gpu: True
+  # CPU/GPU frequencies to profile (in the unit required by the platform)
+  frequencies_cpu: [115200, 729600, 1267200, 2265600]
+  frequencies_gpu: [114750000, 522750000, 1198500000, 1377000000]
 
 # Voltmeter compilation parameters for profiler settings
 param-profiler:
   # number of benchmark replay, for averaging
-  NUM_RUN: 3
+  num_run: 3
   # profiler sampling period (in microsec)
-  SAMPLE_PERIOD_US: 100000
+  sample_period_us: 100000
 
 # arguments for Voltmeter execution mode (see `install/voltmeter --help`)
 arguments:
+  # events can be: 'config', 'cli', 'all_events'
   events: config
   config_cpu: ./config/events_cpu.json
   config_gpu: ./config/events_gpu.json
-  #cli_cpu:
-  #cli_gpu:
+  #cli_cpu: [0x08, 0x86, 0x12, 0x08, 0x86, 0x12, 0x08, 0x86, 0x12, 0x08, 0x86, 0x12, 0x08, 0x86, 0x12, 0x08, 0x86, 0x12, 0x08, 0x86, 0x12, 0x08, 0x86, 0x12]
+  #cli_gpu: [100663390, 100663391, 100663361]
+  # mode can be: 'characterization', 'profile', 'num_passes'
   mode: profile
   trace_dir: ./traces
   benchmarks:
     # name: label for the benchmark
-    # path: path to the benchmark compiled as shared library (`-o *.so
-    #       -fPIC -shared`), absolute or relative to the project root
-    # args: arguments to pass to the benchmark
+    # path: path (abs or rel) to the benchmark compiled as shared library:
+    #       `-o *.so -fPIC -shared` for local compiler, or
+    #       `-o *.so -shared -Xcompiler -fPIC` for GPU cross-compiler
+    # args: arguments to pass to the benchmark; every relative path passed
+    #       as argument must be relative to the ./install/voltmeter binary
     - name: backprop
-      path: ../workloads/rodinia/openmp/backprop/backprop.so
-      args: 250000
-    - name: backprop
-      path: ../workloads/rodinia/openmp/backprop/backprop.so
-      args: 65535
-    - name: particle_finder
-      path: ../workloads/rodinia/openmp/particlefilter/particle_filter.so
-      args: -x 128 -y 128 -z 10 -np 100000
+      path: ./utils/workloads/rodinia/openmp/backprop/backprop.so
+      args: 536870912
+    - name: bfs
+      path: ./utils/workloads/rodinia/openmp/bfs/bfs.so
+      args: 8 ../utils/workloads/rodinia/data/bfs/graph16M.txt

@@ -152,7 +152,7 @@
                     'type': 'dict',
                     'schema': {
                         'name': {
-                            'required': True,
+                            'required': False,
                             'type': 'string'
                         },
                         'path': {
