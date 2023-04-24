@@ -1,0 +1,1838 @@
+diff --git a/Makefile b/Makefile
+index 74ea334..cb8bf80 100755
+--- a/Makefile
++++ b/Makefile
+@@ -6,53 +6,45 @@ CUDA_BIN_DIR := $(RODINIA_BASE_DIR)/bin/linux/cuda
+ OMP_BIN_DIR := $(RODINIA_BASE_DIR)/bin/linux/omp
+ OPENCL_BIN_DIR := $(RODINIA_BASE_DIR)/bin/linux/opencl
+ 
+-CUDA_DIRS := backprop bfs cfd gaussian heartwall hotspot kmeans lavaMD leukocyte lud nn	nw srad streamcluster particlefilter pathfinder mummergpu
+-OMP_DIRS  := backprop bfs cfd 		   heartwall hotspot kmeans lavaMD leukocyte lud nn nw srad streamcluster particlefilter pathfinder mummergpu
++CUDA_DIRS := b+tree backprop bfs cfd dwt2d gaussian heartwall hotspot hotspot3D hybridsort kmeans lavaMD leukocyte lud mummergpu myocyte nn nw particlefilter pathfinder srad srad streamcluster
++OMP_DIRS  := b+tree backprop bfs cfd heartwall hotspot hotspot3D kmeans lavaMD leukocyte lud myocyte nn nw particlefilter pathfinder srad srad streamcluster
+ OCL_DIRS  := backprop bfs cfd gaussian heartwall hotspot kmeans lavaMD leukocyte lud nn	nw srad streamcluster particlefilter pathfinder
+ 
+ all: CUDA OMP OPENCL
+ 
+-CUDA: 
+-	cd cuda/backprop;		make;	cp backprop $(CUDA_BIN_DIR)
+-	cd cuda/bfs; 			make;	cp bfs $(CUDA_BIN_DIR)
+-	cd cuda/cfd; 			make;	cp euler3d euler3d_double pre_euler3d pre_euler3d_double $(CUDA_BIN_DIR)
+-	cd cuda/gaussian;		make;	cp gaussian $(CUDA_BIN_DIR)
+-	cd cuda/heartwall;  		make;	cp heartwall $(CUDA_BIN_DIR)
+-	cd cuda/hotspot; 		make;	cp hotspot $(CUDA_BIN_DIR)
+-	cd cuda/kmeans; 		make;	cp kmeans $(CUDA_BIN_DIR)
+-	cd cuda/lavaMD;			make;	cp lavaMD $(CUDA_BIN_DIR)
+-	cd cuda/leukocyte;  		make;	cp CUDA/leukocyte $(CUDA_BIN_DIR)
+-	cd cuda/lud; 			make;	cp cuda/lud_cuda $(CUDA_BIN_DIR)
+-	cd cuda/nn;				make;	cp nn $(CUDA_BIN_DIR)
+-	cd cuda/nw; 			make;	cp needle $(CUDA_BIN_DIR)
+-	cd cuda/srad/srad_v1; 		make;	cp srad $(CUDA_BIN_DIR)/srad_v1
+-	cd cuda/srad/srad_v2; 		make;   cp srad $(CUDA_BIN_DIR)/srad_v2
+-	cd cuda/streamcluster;		make;	cp sc_gpu $(CUDA_BIN_DIR)
+-	cd cuda/particlefilter;		make;	cp particlefilter_naive particlefilter_float $(CUDA_BIN_DIR)       
+-	cd cuda/pathfinder;		make;	cp pathfinder $(CUDA_BIN_DIR)
+-	cd cuda/mummergpu;  		make;	cp bin/mummergpu $(CUDA_BIN_DIR)
+-	cd cuda/hybridsort;              make;   cp hybridsort $(CUDA_BIN_DIR)
+-	cd cuda/dwt2d;                   make;   cp dwt2d  $(CUDA_BIN_DIR)
+-	
+-	
++CUDA:
++	cd cuda/backprop;		make;
++	cd cuda/bfs; 			make;
++	cd cuda/cfd; 			make;
++	cd cuda/heartwall;  		make;
++	cd cuda/hotspot; 		make;
++	cd cuda/hotspot3D; 		make;
++	cd cuda/hybridsort; 		make;
++	cd cuda/kmeans; 		make;
++	cd cuda/lavaMD;			make;
++	cd cuda/leukocyte;  		make;
++	cd cuda/lud; 			make;
++	cd cuda/nw; 			make;
++	cd cuda/pathfinder;		make;
++	cd cuda/srad/srad_v2; 		make;
++
+ OMP:
+-	cd openmp/backprop;				make;	cp backprop $(OMP_BIN_DIR)
+-	cd openmp/bfs; 					make;	cp bfs $(OMP_BIN_DIR)
+-	cd openmp/cfd; 					make;	cp euler3d_cpu euler3d_cpu_double pre_euler3d_cpu pre_euler3d_cpu_double $(OMP_BIN_DIR)
+-	cd openmp/heartwall;  				make;	cp heartwall $(OMP_BIN_DIR)
+-	cd openmp/hotspot; 				make;	cp hotspot $(OMP_BIN_DIR)
+-	cd openmp/kmeans/kmeans_openmp;			make;	cp kmeans $(OMP_BIN_DIR)
+-	cd openmp/lavaMD;				make;	cp lavaMD $(OMP_BIN_DIR)
+-	cd openmp/leukocyte;  				make;	cp OpenMP/leukocyte $(OMP_BIN_DIR)
+-	cd openmp/lud; 					make;	cp omp/lud_omp $(OMP_BIN_DIR)
+-	cd openmp/nn;					make;	cp nn $(OMP_BIN_DIR)
+-	cd openmp/nw; 					make;	cp needle $(OMP_BIN_DIR)
+-	cd openmp/srad/srad_v1; 			make;	cp srad $(OMP_BIN_DIR)/srad_v1
+-	cd openmp/srad/srad_v2; 			make;   cp srad $(OMP_BIN_DIR)/srad_v2
+-	cd openmp/streamcluster;			make;	cp sc_omp $(OMP_BIN_DIR)
+-	cd openmp/particlefilter;			make;	cp particle_filter $(OMP_BIN_DIR)
+-	cd openmp/pathfinder;			make;	cp pathfinder $(OMP_BIN_DIR)
+-	cd openmp/mummergpu;  				make;	cp bin/mummergpu $(OMP_BIN_DIR)
++	cd openmp/backprop;				make;
++	cd openmp/bfs; 					make;
++	cd openmp/cfd; 					make;
++	cd openmp/heartwall;  				make;
++	cd openmp/hotspot; 				make;
++	cd openmp/hotspot3D; 				make;
++	cd openmp/kmeans/kmeans_openmp;			make;
++	cd openmp/lavaMD;				make;
++	cd openmp/leukocyte;				make;
++	cd openmp/lud; 					make;
++	cd openmp/myocyte;  				make;
++	cd openmp/nw; 					make;
++	cd openmp/particlefilter;			make;
++	cd openmp/pathfinder;				make;
++	cd openmp/srad/srad_v2; 			make;
++	cd openmp/streamcluster;			make;
+ 
+ OPENCL:
+ 	cd opencl/backprop;			make;	cp backprop $(OPENCL_BIN_DIR)
+diff --git a/common/common.mk b/common/common.mk
+index 4a5d800..783d54c 100644
+--- a/common/common.mk
++++ b/common/common.mk
+@@ -36,7 +36,7 @@
+ .SUFFIXES : .cu .cu_dbg_o .c_dbg_o .cpp_dbg_o .cu_rel_o .c_rel_o .cpp_rel_o .cubin
+ 
+ # Add new SM Versions here as devices with new Compute Capability are released
+-SM_VERSIONS := sm_10 sm_11 sm_12 sm_13
++SM_VERSIONS := sm_72
+ 
+ CUDA_INSTALL_PATH ?= /usr/local/cuda
+ 
+@@ -61,10 +61,10 @@ LIBDIR     := $(ROOTDIR)/../lib
+ COMMONDIR  := $(ROOTDIR)/../common
+ 
+ # Compilers
+-NVCC       := $(CUDA_INSTALL_PATH)/bin/nvcc 
+-CXX        := g++
+-CC         := gcc
+-LINK       := g++ -fPIC
++NVCC       := $(CUDA_INSTALL_PATH)/bin/nvcc -shared -Xcompiler -fPIC
++CXX        := g++ -fPIC -shared
++CC         := gcc -fPIC -shared
++LINK       := g++ -fPIC -shared
+ 
+ # Includes
+ INCLUDES  += -I. -I$(CUDA_INSTALL_PATH)/include -I$(COMMONDIR)/inc
+@@ -176,7 +176,7 @@ ifeq ($(USECUDPP), 1)
+ endif
+ 
+ # Libs
+-LIB       := -L$(CUDA_INSTALL_PATH)/lib -L$(LIBDIR) -L$(COMMONDIR)/lib/$(OSLOWER)
++LIB       := -L$(CUDA_INSTALL_PATH)/lib -L$(CUDA_INSTALL_PATH)/lib64 -L$(LIBDIR) -L$(COMMONDIR)/lib/$(OSLOWER)
+ ifeq ($(USEDRVAPI),1)
+    LIB += -lcuda ${OPENGLLIB} $(PARAMGLLIB) $(RENDERCHECKGLLIB) $(CUDPPLIB) ${LIB} 
+ else
+diff --git a/common/make.config b/common/make.config
+index 9d56b88..5f62622 100755
+--- a/common/make.config
++++ b/common/make.config
+@@ -2,7 +2,7 @@
+ CUDA_DIR = /usr/local/cuda
+ 
+ # CUDA toolkit libraries
+-CUDA_LIB_DIR := $(CUDA_DIR)/lib
++CUDA_LIB_DIR := $(CUDA_DIR)/lib64
+ ifeq ($(shell uname -m), x86_64)
+      ifeq ($(shell if test -d $(CUDA_DIR)/lib64; then echo T; else echo F; fi), T)
+      	CUDA_LIB_DIR := $(CUDA_DIR)/lib64
+@@ -11,7 +11,7 @@ endif
+ 
+ # CUDA SDK installation path
+ #SDK_DIR = $(HOME)/NVIDIA_GPU_Computing_SDK/C
+-SDK_DIR = /usr/local/cuda-5.5/samples/
++SDK_DIR = /usr/local/cuda/samples/
+ #SDK_DIR =/if10/kw5na/NVIDIA_CUDA_Computing_SDK4/C
+ 
+ # OPENCL
+diff --git a/cuda/b+tree/Makefile b/cuda/b+tree/Makefile
+index 7d74b16..a3a99d4 100755
+--- a/cuda/b+tree/Makefile
++++ b/cuda/b+tree/Makefile
+@@ -1,7 +1,7 @@
+ include ../../common/make.config
+ 
+ CUDA_LIB =	-lcuda -lcudart
+-CUDA_FLAG = -arch sm_20
++CUDA_FLAG = -arch sm_72
+ 
+ # ====================================================================================================100
+ #	END
+@@ -51,7 +51,7 @@ CUDA_FLAG = -arch sm_20
+ #	GCC
+ # ====================================================================================================100
+ 
+-C_C = gcc
++C_C = gcc -fPIC -shared
+ # OMP_LIB = -lgomp
+ # OMP_FLAG = -fopenmp
+ # OCL_LIB = -lOpenCL
+@@ -60,7 +60,7 @@ C_C = gcc
+ #	NVCC
+ # ====================================================================================================100
+ 
+-CUD_C = nvcc
++CUD_C = nvcc -shared -Xcompiler -fPIC
+ # OMP_FLAG = 	-Xcompiler paste_one_here
+ 
+ # ====================================================================================================100
+@@ -100,7 +100,7 @@ b+tree.out:	./main.o \
+ 			-lm \
+ 			-L$(CUDA_LIB_DIR) \
+ 			$(CUDA_LIB)\
+-                       -o b+tree.out
++                       -o b+tree.so
+ 
+ 
+ # ========================================================================================================================================================================================================200
+diff --git a/cuda/backprop/Makefile b/cuda/backprop/Makefile
+index a7ed41d..423819d 100755
+--- a/cuda/backprop/Makefile
++++ b/cuda/backprop/Makefile
+@@ -2,11 +2,11 @@ include ../../common/make.config
+ 
+ # C compiler
+ CC = gcc
+-CC_FLAGS = -g  -O2
++CC_FLAGS = -g  -O2  -fPIC -shared
+ 
+ # CUDA compiler
+ NVCC = $(CUDA_DIR)/bin/nvcc
+-NVCC_FLAGS = -I$(CUDA_DIR)/include
++NVCC_FLAGS = -I$(CUDA_DIR)/include -shared -Xcompiler -fPIC
+ 
+ # 'make dbg=1' enables NVCC debugging
+ ifeq ($(dbg),1)
+@@ -21,15 +21,15 @@ ifeq ($(emu),1)
+ endif
+ 
+ 
+-backprop: backprop.o facetrain.o imagenet.o backprop_cuda.o 
+-	$(CC) $(CC_FLAGS) backprop.o facetrain.o imagenet.o backprop_cuda.o -o backprop -L$(CUDA_LIB_DIR) -lcuda -lcudart -lm
++backprop: backprop.o facetrain.o imagenet.o backprop_cuda.o
++	$(CC) $(CC_FLAGS) backprop.o facetrain.o imagenet.o backprop_cuda.o -o backprop.so -L$(CUDA_LIB_DIR) -lcuda -lcudart -lm
+ 
+ %.o: %.[ch]
+ 	$(CC) $(CC_FLAGS) $< -c
+ 
+ facetrain.o: facetrain.c backprop.h
+ 	$(CC) $(CC_FLAGS) facetrain.c -c
+-	
++
+ backprop.o: backprop.c backprop.h
+ 	$(CC) $(CC_FLAGS) backprop.c -c
+ 
+@@ -41,4 +41,4 @@ imagenet.o: imagenet.c backprop.h
+ 
+ 
+ clean:
+-	rm -f *.o *~ backprop backprop_cuda.linkinfo
++	rm -f *.o *~ backprop.so backprop_cuda.linkinfo
+diff --git a/cuda/backprop/backprop_cuda.cu b/cuda/backprop/backprop_cuda.cu
+index f90c41f..a14f823 100755
+--- a/cuda/backprop/backprop_cuda.cu
++++ b/cuda/backprop/backprop_cuda.cu
+@@ -129,13 +129,13 @@ void bpnn_train_cuda(BPNN *net, float *eo, float *eh)
+  
+   cudaThreadSynchronize();
+   
+-  cudaError_t error = cudaGetLastError();
+-	if (error != cudaSuccess) {
+-		printf("bpnn kernel error: %s\n", cudaGetErrorString(error));
+-		exit(EXIT_FAILURE);
+-	}
+-  
+-  cudaMemcpy(partial_sum, hidden_partial_sum, num_blocks * WIDTH * sizeof(float), cudaMemcpyDeviceToHost);
++  cudaError_t error = cudaGetLastError();
++	if (error != cudaSuccess) {
++		printf("bpnn kernel error: %s\n", cudaGetErrorString(error));
++		return;
++	}
++
++  cudaMemcpy(partial_sum, hidden_partial_sum, num_blocks * WIDTH * sizeof(float), cudaMemcpyDeviceToHost);
+      
+   for (int j = 1; j <= hid; j++) {
+     sum = 0.0;
+diff --git a/cuda/backprop/facetrain.c b/cuda/backprop/facetrain.c
+index 00fb734..6ca8947 100755
+--- a/cuda/backprop/facetrain.c
++++ b/cuda/backprop/facetrain.c
+@@ -4,13 +4,12 @@
+ #include <stdlib.h>
+ #include <math.h>
+ #include "backprop.h"
+-#include "omp.h"
+-
+-extern char *strcpy();
+-extern void exit();
+-
+-int layer_size = 0;
+-
++#include "omp.h"
++
++extern char *strcpy();
++
++int layer_size = 0;
++
+ backprop_face()
+ {
+   BPNN *net;
+@@ -33,21 +32,21 @@ char *argv[];
+ {
+ 	
+   int seed;
+-
+-  if (argc!=2){
+-  fprintf(stderr, "usage: backprop <num of input elements>\n");
+-  exit(0);
+-  }
+-  layer_size = atoi(argv[1]);
+-  if (layer_size%16!=0){
+-  fprintf(stderr, "The number of input points must be divided by 16\n");
+-  exit(0);
+-  }
+-  
+-
++
++  if (argc!=2){
++  fprintf(stderr, "usage: backprop <num of input elements>\n");
++  return 0;
++  }
++  layer_size = atoi(argv[1]);
++  if (layer_size%16!=0){
++  fprintf(stderr, "The number of input points must be divided by 16\n");
++  return 0;
++  }
++
++
+   seed = 7;   
+-  bpnn_initialize(seed);
+-  backprop_face();
+-
+-  exit(0);
+-}
++  bpnn_initialize(seed);
++  backprop_face();
++
++  return 0;
++}
+diff --git a/cuda/bfs/Makefile b/cuda/bfs/Makefile
+index c275dd3..9d11dd1 100755
+--- a/cuda/bfs/Makefile
++++ b/cuda/bfs/Makefile
+@@ -1,6 +1,6 @@
+ include ../../common/make.config
+ 
+-CC := $(CUDA_DIR)/bin/nvcc
++CC := $(CUDA_DIR)/bin/nvcc -shared -Xcompiler -fPIC
+ 
+ INCLUDE := $(CUDA_DIR)/include
+ 
+@@ -9,7 +9,7 @@ SRC = bfs.cu
+ EXE = bfs
+ 
+ release: $(SRC)
+-	$(CC) $(SRC) -o $(EXE) -I$(INCLUDE) -L$(CUDA_LIB_DIR) 
++	$(CC) $(SRC) -o $(EXE).so -I$(INCLUDE) -L$(CUDA_LIB_DIR)
+ 
+ enum: $(SRC)
+ 	$(CC) -deviceemu $(SRC) -o $(EXE) -I$(INCLUDE) -L$(CUDA_LIB_DIR) 
+@@ -21,4 +21,4 @@ debugenum: $(SRC)
+ 	$(CC) -g -deviceemu $(SRC) -o $(EXE) -I$(INCLUDE) -L$(CUDA_LIB_DIR) 
+ 
+ clean: $(SRC)
+-	rm -f $(EXE) $(EXE).linkinfo result.txt
++	rm -f $(EXE).so $(EXE).linkinfo result.txt
+diff --git a/cuda/cfd/Makefile b/cuda/cfd/Makefile
+index 76df25d..493d8ca 100755
+--- a/cuda/cfd/Makefile
++++ b/cuda/cfd/Makefile
+@@ -11,21 +11,21 @@ ifeq ($(shell uname -m), x86_64)
+ endif
+ 
+ 
+-all: euler3d euler3d_double  pre_euler3d  pre_euler3d_double 
++all: euler3d euler3d_double  pre_euler3d  pre_euler3d_double
+ 
+ euler3d: euler3d.cu
+-	nvcc $(KERNEL_DIM) -O2 -Xptxas -v --gpu-architecture=compute_20 --gpu-code=compute_20 euler3d.cu -o euler3d -I$(CUDA_SDK_PATH)/common/inc  -L$(CUDA_SDK_PATH)/lib $(CUTIL_LIB)
++	nvcc $(KERNEL_DIM) -O2 -Xptxas -v --gpu-architecture=compute_72 --gpu-code=compute_72 euler3d.cu -o euler3d -I$(CUDA_SDK_PATH)/common/inc  -L$(CUDA_SDK_PATH)/lib $(CUTIL_LIB)
+ 
+ euler3d_double: euler3d_double.cu
+-	nvcc -Xptxas -v -O3 --gpu-architecture=compute_20 --gpu-code=compute_20 euler3d_double.cu -o euler3d_double -I$(CUDA_SDK_PATH)/common/inc  -L$(CUDA_SDK_PATH)/lib $(CUTIL_LIB)
++	nvcc -Xptxas -v -O3 --gpu-architecture=compute_72 --gpu-code=compute_72 euler3d_double.cu -o euler3d_double.so -I$(CUDA_SDK_PATH)/common/inc  -L$(CUDA_SDK_PATH)/lib $(CUTIL_LIB) -shared -Xcompiler -fPIC
+ 
+ 
+ pre_euler3d: pre_euler3d.cu
+-	nvcc -Xptxas -v -O3 --gpu-architecture=compute_20 --gpu-code=compute_20 pre_euler3d.cu -o pre_euler3d -I$(CUDA_SDK_PATH)/common/inc  -L$(CUDA_SDK_PATH)/lib $(CUTIL_LIB)
++	nvcc -Xptxas -v -O3 --gpu-architecture=compute_72 --gpu-code=compute_72 pre_euler3d.cu -o pre_euler3d -I$(CUDA_SDK_PATH)/common/inc  -L$(CUDA_SDK_PATH)/lib $(CUTIL_LIB)
+ 
+ pre_euler3d_double: pre_euler3d_double.cu
+-	nvcc -Xptxas -v -O3 --gpu-architecture=compute_20 --gpu-code=compute_20 pre_euler3d_double.cu -o pre_euler3d_double -I$(CUDA_SDK_PATH)/common/inc  -L$(CUDA_SDK_PATH)/lib $(CUTIL_LIB)
++	nvcc -Xptxas -v -O3 --gpu-architecture=compute_72 --gpu-code=compute_72 pre_euler3d_double.cu -o pre_euler3d_double -I$(CUDA_SDK_PATH)/common/inc  -L$(CUDA_SDK_PATH)/lib $(CUTIL_LIB)
+ 
+ 
+ clean:
+-	rm -f euler3d euler3d_double pre_euler3d pre_euler3d_double *.linkinfo
++	rm -f euler3d euler3d_double.so pre_euler3d pre_euler3d_double *.linkinfo
+diff --git a/cuda/dwt2d/Makefile b/cuda/dwt2d/Makefile
+index 29c8b6c..cd13235 100755
+--- a/cuda/dwt2d/Makefile
++++ b/cuda/dwt2d/Makefile
+@@ -9,7 +9,7 @@ cudagdb=0 #compile for use with cuda-gdb, note that 'dbg' must be 1 as well
+ performancetest=1
+ 
+ # NVCC Options
+-NVCCFLAGS += -arch sm_20
++NVCCFLAGS += -arch sm_72
+ 
+ # Files
+ CFILES := 
+@@ -96,17 +96,17 @@ CUOBJS=$(CUFILES:.cu=.cu.o)
+ .SUFFIXES: .c.o .cpp.o .cu.o .cu 
+ 
+ %.c.o: %.c
+-	$(CC) $(CFLAGS) -c $< -o $@
++	$(CC) $(CFLAGS) -c $< -o $@  -shared -fPIC
+ 
+ %.cu.o: %.cu
+-	$(NVCC) $(OUTPUT) $(NVCCFLAGS) -c $< -o $@
++	$(NVCC) $(OUTPUT) $(NVCCFLAGS) -c $< -o $@ -shared -Xcompiler -fPIC
+ 
+ %.cpp.o: %.cpp
+-	$(CXX) $(CXXFLAGS) -c $< -o $@
++	$(CXX) $(CXXFLAGS) -c $< -o $@ -shared -fPIC
+ 
+-$(EXECUTABLE): $(COBJS) $(CXXOBJS) $(CUOBJS) 
+-	$(LINK) -o $(EXECUTABLE) $(COBJS) $(CXXOBJS) $(CUOBJS) $(LDFLAGS)
++$(EXECUTABLE): $(COBJS) $(CXXOBJS) $(CUOBJS)
++	$(LINK) -o $(EXECUTABLE).so $(COBJS) $(CXXOBJS) $(CUOBJS) $(LDFLAGS) -shared -fPIC
+ 
+ clean:
+-	rm -f $(COBJS) $(CXXOBJS) $(CUOBJS) $(EXECUTABLE)
+-	rm *.bmp.dwt.*		
+\ No newline at end of file
++	rm -f $(COBJS) $(CXXOBJS) $(CUOBJS) $(EXECUTABLE).so
++	rm *.bmp.dwt.*
+\ No newline at end of file
+diff --git a/cuda/dwt2d/result.txt b/cuda/dwt2d/result.txt
+index e1296dc..e097801 100755
+--- a/cuda/dwt2d/result.txt
++++ b/cuda/dwt2d/result.txt
+@@ -1,9 +1,9 @@
+-/usr/local/cuda/bin/nvcc -arch sm_20 -I. -I/include  -O2  --compiler-options -fno-strict-aliasing -c main.cu -o main.cu.o
+-/usr/local/cuda/bin/nvcc -arch sm_20 -I. -I/include  -O2  --compiler-options -fno-strict-aliasing -c dwt.cu -o dwt.cu.o
+-/usr/local/cuda/bin/nvcc -arch sm_20 -I. -I/include  -O2  --compiler-options -fno-strict-aliasing -c components.cu -o components.cu.o
+-/usr/local/cuda/bin/nvcc -arch sm_20 -I. -I/include  -O2  --compiler-options -fno-strict-aliasing -c dwt_cuda/fdwt53.cu -o dwt_cuda/fdwt53.cu.o
+-/usr/local/cuda/bin/nvcc -arch sm_20 -I. -I/include  -O2  --compiler-options -fno-strict-aliasing -c dwt_cuda/fdwt97.cu -o dwt_cuda/fdwt97.cu.o
+-/usr/local/cuda/bin/nvcc -arch sm_20 -I. -I/include  -O2  --compiler-options -fno-strict-aliasing -c dwt_cuda/common.cu -o dwt_cuda/common.cu.o
+-/usr/local/cuda/bin/nvcc -arch sm_20 -I. -I/include  -O2  --compiler-options -fno-strict-aliasing -c dwt_cuda/rdwt97.cu -o dwt_cuda/rdwt97.cu.o
+-/usr/local/cuda/bin/nvcc -arch sm_20 -I. -I/include  -O2  --compiler-options -fno-strict-aliasing -c dwt_cuda/rdwt53.cu -o dwt_cuda/rdwt53.cu.o
++/usr/local/cuda/bin/nvcc -arch sm_72 -I. -I/include  -O2  --compiler-options -fno-strict-aliasing -c main.cu -o main.cu.o
++/usr/local/cuda/bin/nvcc -arch sm_72 -I. -I/include  -O2  --compiler-options -fno-strict-aliasing -c dwt.cu -o dwt.cu.o
++/usr/local/cuda/bin/nvcc -arch sm_72 -I. -I/include  -O2  --compiler-options -fno-strict-aliasing -c components.cu -o components.cu.o
++/usr/local/cuda/bin/nvcc -arch sm_72 -I. -I/include  -O2  --compiler-options -fno-strict-aliasing -c dwt_cuda/fdwt53.cu -o dwt_cuda/fdwt53.cu.o
++/usr/local/cuda/bin/nvcc -arch sm_72 -I. -I/include  -O2  --compiler-options -fno-strict-aliasing -c dwt_cuda/fdwt97.cu -o dwt_cuda/fdwt97.cu.o
++/usr/local/cuda/bin/nvcc -arch sm_72 -I. -I/include  -O2  --compiler-options -fno-strict-aliasing -c dwt_cuda/common.cu -o dwt_cuda/common.cu.o
++/usr/local/cuda/bin/nvcc -arch sm_72 -I. -I/include  -O2  --compiler-options -fno-strict-aliasing -c dwt_cuda/rdwt97.cu -o dwt_cuda/rdwt97.cu.o
++/usr/local/cuda/bin/nvcc -arch sm_72 -I. -I/include  -O2  --compiler-options -fno-strict-aliasing -c dwt_cuda/rdwt53.cu -o dwt_cuda/rdwt53.cu.o
+ g++ -fPIC -o dwt2d   main.cu.o dwt.cu.o components.cu.o dwt_cuda/fdwt53.cu.o dwt_cuda/fdwt97.cu.o dwt_cuda/common.cu.o dwt_cuda/rdwt97.cu.o dwt_cuda/rdwt53.cu.o -L/usr/local/cuda/lib64 -lcudart
+diff --git a/cuda/gaussian/Makefile b/cuda/gaussian/Makefile
+index f520a5f..4241f87 100755
+--- a/cuda/gaussian/Makefile
++++ b/cuda/gaussian/Makefile
+@@ -1,6 +1,6 @@
+ include ../../common/make.config
+ 
+-CC := $(CUDA_DIR)/bin/nvcc
++CC := $(CUDA_DIR)/bin/nvcc -shared -Xcompiler -fPIC
+ 
+ INCLUDE := $(CUDA_DIR)/include
+ 
+@@ -8,7 +8,7 @@ SRC = gaussian.cu
+ EXE = gaussian
+ 
+ release: $(SRC)
+-	$(CC) $(KERNEL_DIM) $(SRC) -o $(EXE) -I$(INCLUDE) -L$(CUDA_LIB_DIR) 
++	$(CC) $(KERNEL_DIM) $(SRC) -o $(EXE).so -I$(INCLUDE) -L$(CUDA_LIB_DIR)
+ 
+ clean:
+-	rm gaussian
++	rm gaussian.so
+diff --git a/cuda/heartwall/AVI/makefile b/cuda/heartwall/AVI/makefile
+index 9b1b96a..d58ae8f 100755
+--- a/cuda/heartwall/AVI/makefile
++++ b/cuda/heartwall/AVI/makefile
+@@ -1,13 +1,13 @@
+-all: avimod.o avilib.o
+-
+-# compile supporting function file into object (binary)
+-avimod.o: avilib.h avimod.c 
+-	gcc -c avimod.c
+-
+-# compile supporting function file into object (binary)
+-avilib.o: avilib.h avilib.c
+-	gcc -c avilib.c
+-
+-# delete files
+-clean:
+-	rm *.o *.out
++all: avimod.o avilib.o
++
++# compile supporting function file into object (binary)
++avimod.o: avilib.h avimod.c
++	gcc -c avimod.c -shared -fPIC
++
++# compile supporting function file into object (binary)
++avilib.o: avilib.h avilib.c
++	gcc -c avilib.c -shared -fPIC
++
++# delete files
++clean:
++	rm *.o *.out
+diff --git a/cuda/heartwall/Makefile b/cuda/heartwall/Makefile
+index 0e47ac8..47ea097 100755
+--- a/cuda/heartwall/Makefile
++++ b/cuda/heartwall/Makefile
+@@ -4,12 +4,12 @@ override OUTPUT = -DOUTPUT
+ endif
+ 
+ # link objects(binaries) together
+-heartwall: main.o ./AVI/avilib.o ./AVI/avimod.o 
+-	nvcc main.o ./AVI/avilib.o ./AVI/avimod.o -I/usr/local/cuda/include -lm -o heartwall
++heartwall: main.o ./AVI/avilib.o ./AVI/avimod.o
++	nvcc main.o ./AVI/avilib.o ./AVI/avimod.o -I/usr/local/cuda/include -lm -o heartwall.so -shared -Xcompiler -fPIC
+ 
+ # compile main function file into object (binary)
+ main.o: main.cu kernel.cu define.c
+-	nvcc $(OUTPUT) $(KERNEL_DIM) main.cu -I./AVI -c -O3
++	nvcc $(OUTPUT) $(KERNEL_DIM) main.cu -I./AVI -c -O3 -shared -Xcompiler -fPIC
+ 
+ ./AVI/avilib.o ./AVI/avimod.o:
+ 	cd AVI; make;
+diff --git a/cuda/hotspot/Makefile b/cuda/hotspot/Makefile
+index d3ebef1..ada0c6c 100644
+--- a/cuda/hotspot/Makefile
++++ b/cuda/hotspot/Makefile
+@@ -1,12 +1,12 @@
+ include ../../common/make.config
+ 
+-CC := $(CUDA_DIR)/bin/nvcc
++CC := $(CUDA_DIR)/bin/nvcc -shared -Xcompiler -fPIC
+ 
+ INCLUDE := $(CUDA_DIR)/include
+ 
+ SRC = hotspot.cu
+ 
+-EXE = hotspot
++EXE = hotspot.so
+ 
+ release: $(SRC)
+ 	$(CC) $(KERNEL_DIM) $(SRC) -o $(EXE) -I$(INCLUDE) -L$(CUDA_LIB_DIR) 
+diff --git a/cuda/hotspot3D/Makefile b/cuda/hotspot3D/Makefile
+index f08f693..1f25538 100755
+--- a/cuda/hotspot3D/Makefile
++++ b/cuda/hotspot3D/Makefile
+@@ -1,16 +1,16 @@
+-include ~/rodinia_3.0/common/make.config
++include ../../common/make.config
+ 
+-CC := $(CUDA_DIR)/bin/nvcc
++CC := $(CUDA_DIR)/bin/nvcc -shared -Xcompiler -fPIC
+ 
+ INCLUDE := $(CUDA_DIR)/include
+ 
+ SRC = 3D.cu
+ 
+-EXE = 3D 
++EXE = 3D.so
+ 
+ OUTPUT = *.out
+ 
+-FLAGS = -g -G #-arch sm_20 --ptxas-options=-v
++FLAGS = -g -G #-arch sm_72 --ptxas-options=-v
+ release: $(SRC)
+ 	$(CC) $(KERNEL_DIM) $(FLAGS) $(SRC) -o $(EXE) -I$(INCLUDE) -L$(CUDA_LIB_DIR) 
+ 
+diff --git a/cuda/huffman/Makefile b/cuda/huffman/Makefile
+index a89706b..443440b 100755
+--- a/cuda/huffman/Makefile
++++ b/cuda/huffman/Makefile
+@@ -3,7 +3,7 @@ CC = g++
+ 
+ CUDA_INCLUDEPATH=/usr/local/cuda-6.5/include
+ 
+-NVCC_OPTS=-O3 -arch=sm_35 -Xcompiler -m64 -g -G
++NVCC_OPTS=-O3 -arch=sm_72 -Xcompiler -m64 -g -G
+ 
+ GCC_OPTS=-O3 -Wall -Wextra -m64
+ 
+diff --git a/cuda/hybridsort/Makefile b/cuda/hybridsort/Makefile
+index 83e37e3..dfae31a 100644
+--- a/cuda/hybridsort/Makefile
++++ b/cuda/hybridsort/Makefile
+@@ -1,7 +1,7 @@
+ include ../../common/make.config
+ CC := $(CUDA_DIR)/bin/nvcc
+ 
+-CC_FLAGS = -arch=sm_20
++CC_FLAGS = -arch=sm_72 -shared -Xcompiler -fPIC
+ 
+ ifdef VERIFY
+ override VERIFY = -DVERIFY
+@@ -16,8 +16,8 @@ override TIMER = -DTIMER
+ endif
+ 
+ hybridsort: main.cu  bucketsort.cu bucketsort.cuh bucketsort_kernel.cu histogram1024_kernel.cu  mergesort.cu mergesort.cuh mergesort_kernel.cu
+-	$(CC) $(CC_FLAGS) $(VERIFY) $(OUTPUT) $(TIMER) $(HISTO_WG_SIZE_0) $(BUCKET_WG_SIZE_0) $(BUCKET_WG_SIZE_1) $(MERGE_WG_SIZE_0) $(MERGE_WG_SIZE_1) bucketsort.cu mergesort.cu main.cu -o hybridsort
++	$(CC) $(CC_FLAGS) $(VERIFY) $(OUTPUT) $(TIMER) $(HISTO_WG_SIZE_0) $(BUCKET_WG_SIZE_0) $(BUCKET_WG_SIZE_1) $(MERGE_WG_SIZE_0) $(MERGE_WG_SIZE_1) bucketsort.cu mergesort.cu main.cu -o hybridsort.so
+ 
+ 
+ clean:
+-	rm	*.o hybridsort
++	rm	*.o hybridsort.so
+diff --git a/cuda/kmeans/Makefile b/cuda/kmeans/Makefile
+index 7914bfa..22ab229 100755
+--- a/cuda/kmeans/Makefile
++++ b/cuda/kmeans/Makefile
+@@ -2,11 +2,11 @@ include ../../common/make.config
+ 
+ # C compiler
+ CC = gcc
+-CC_FLAGS = -g -fopenmp -O2 
++CC_FLAGS = -g -fopenmp -O2 -shared -fPIC
+ 
+ # CUDA compiler
+ NVCC = $(CUDA_DIR)/bin/nvcc
+-NVCC_FLAGS = -I$(CUDA_DIR)/include 
++NVCC_FLAGS = -I$(CUDA_DIR)/include -shared -Xcompiler -fPIC
+ 
+ # 'make dbg=1' enables NVCC debugging
+ ifeq ($(dbg),1)
+@@ -22,13 +22,13 @@ endif
+ 
+ 
+ kmeans: cluster.o getopt.o kmeans.o kmeans_clustering.o kmeans_cuda.o rmse.o
+-	$(CC) $(CC_FLAGS) cluster.o getopt.o kmeans.o kmeans_clustering.o kmeans_cuda.o rmse.o -o kmeans -L$(CUDA_LIB_DIR) -lcuda -lcudart -lm
++	$(CC) $(CC_FLAGS) cluster.o getopt.o kmeans.o kmeans_clustering.o kmeans_cuda.o rmse.o -o kmeans.so -L$(CUDA_LIB_DIR) -lcuda -lcudart -lm
+ 
+ %.o: %.[ch]
+-	$(CC) $(CC_FLAGS) $< -c
++	$(CC) $(CC_FLAGS) $^ -c
+ 
+ kmeans_cuda.o: kmeans_cuda.cu 
+ 	$(NVCC) $(NVCC_FLAGS) -c kmeans_cuda.cu
+ 
+ clean:
+-	rm -f *.o *~ kmeans kmeans_cuda.linkinfo
++	rm -f *.o *~ kmeans.so kmeans_cuda.linkinfo
+diff --git a/cuda/lavaMD/makefile b/cuda/lavaMD/makefile
+index 3944253..0daaf4d 100755
+--- a/cuda/lavaMD/makefile
++++ b/cuda/lavaMD/makefile
+@@ -12,13 +12,13 @@ ifdef OUTPUT
+ override OUTPUT = -DOUTPUT
+ endif
+ 
+-C_C = gcc
++C_C = gcc -shared -fPIC
+ OMP_LIB = -lgomp
+ OMP_FLAG = -fopenmp
+ 
+ CUD_C = $(CUDA_DIR)/bin/nvcc
+ # OMP_FLAG = 	-Xcompiler paste_one_here
+-CUDA_FLAG = -arch sm_13
++CUDA_FLAG = -arch sm_72 -shared -Xcompiler -fPIC
+ 
+ # link objects (binaries) together
+ a.out:		main.o \
+@@ -35,7 +35,7 @@ a.out:		main.o \
+ 			-L/usr/local/cuda/lib64 \
+ 			-lcuda -lcudart \
+ 			$(OMP_LIB) \
+-			-o lavaMD
++			-o lavaMD.so
+ 
+ # compile function files into objects (binaries)
+ main.o:		main.h \
+diff --git a/cuda/leukocyte/CUDA/Makefile b/cuda/leukocyte/CUDA/Makefile
+index 3086f62..a7d615b 100755
+--- a/cuda/leukocyte/CUDA/Makefile
++++ b/cuda/leukocyte/CUDA/Makefile
+@@ -5,11 +5,11 @@ override OUTPUT = -DOUTPUT
+ endif
+ 
+ # C compiler
+-CC = gcc
++CC = gcc -shared -fPIC
+ CC_FLAGS = -g -O3 -Wall -I$(MATRIX_DIR)
+ 
+ # CUDA compiler
+-NVCC = $(CUDA_DIR)/bin/nvcc
++NVCC = $(CUDA_DIR)/bin/nvcc -shared -Xcompiler -fPIC
+ NVCC_FLAGS = -I$(CUDA_DIR)/include -I$(SDK_DIR)/common/inc
+ 
+ # Matrix library path
+@@ -29,10 +29,10 @@ endif
+ 
+ 
+ leukocyte: detect_main.o avilib.o find_ellipse.o find_ellipse_kernel.o track_ellipse.o track_ellipse_kernel.o misc_math.o $(MATRIX_DIR)/meschach.a
+-	$(CC) $(CC_FLAGS) -lm avilib.o find_ellipse.o find_ellipse_kernel.o track_ellipse.o track_ellipse_kernel.o misc_math.o detect_main.o -o leukocyte $(MATRIX_DIR)/meschach.a -L$(CUDA_LIB_DIR) -lm -lcuda -lcudart
++	$(CC) $(CC_FLAGS) -lm avilib.o find_ellipse.o find_ellipse_kernel.o track_ellipse.o track_ellipse_kernel.o misc_math.o detect_main.o -o leukocyte.so $(MATRIX_DIR)/meschach.a -L$(CUDA_LIB_DIR) -lm -lcuda -lcudart
+ 
+ %.o: %.[ch]
+-	$(CC)  $(OUTPUT) $(CC_FLAGS) $< -c
++	$(CC)  $(OUTPUT) $(CC_FLAGS) $^ -c
+ 
+ detect_main.o: detect_main.c find_ellipse.h track_ellipse.h avilib.h 
+ 	$(CC) $(CC_FLAGS) detect_main.c -c
+@@ -51,4 +51,4 @@ $(MATRIX_DIR)/meschach.a:
+ 	cd $(MATRIX_DIR); ./configure --with-all; make all; make clean
+ 
+ clean:
+-	rm -f *.o *~ leukocyte *.linkinfo
++	rm -f *.o *~ leukocyte.so *.linkinfo
+diff --git a/cuda/leukocyte/meschach_lib/makefile b/cuda/leukocyte/meschach_lib/makefile
+index 08bf06e..1e62a39 100755
+--- a/cuda/leukocyte/meschach_lib/makefile
++++ b/cuda/leukocyte/meschach_lib/makefile
+@@ -19,7 +19,7 @@ RANLIB = ranlib
+ 
+ # CFLAGS = -O -g
+ # CFLAGS = -pg -g
+-CFLAGS = -O
++CFLAGS = -O -shared -fPIC
+ 
+ 
+ .c.o:
+diff --git a/cuda/lud/cuda/Makefile b/cuda/lud/cuda/Makefile
+index 8ea9a96..1dcd561 100755
+--- a/cuda/lud/cuda/Makefile
++++ b/cuda/lud/cuda/Makefile
+@@ -1,5 +1,5 @@
+-CC = gcc
+-NVCC = nvcc
++CC = gcc -shared -fPIC
++NVCC = nvcc -shared -Xcompiler -fPIC
+ 
+ DEFS += \
+ 		-DGPU_TIMER \
+@@ -8,7 +8,7 @@ DEFS += \
+ NVCCFLAGS += -I../common \
+ 			 -O3 \
+ 			 -use_fast_math \
+-			 -arch=sm_13 \
++			 -arch=sm_72 \
+ 			 -lm \
+ 			 $(SPACE)
+ 
+@@ -19,7 +19,7 @@ CFLAGS += -I../common \
+ 		  $(SPACE)
+ 
+ # Add source files here
+-EXECUTABLE  := lud_cuda
++EXECUTABLE  := lud_cuda.so
+ # Cuda source files (compiled with cudacc)
+ CUFILES     := lud_kernel.cu
+ # C/C++ source files (compiled with gcc / c++)
+diff --git a/cuda/mummergpu/src/Makefile b/cuda/mummergpu/src/Makefile
+index a567bad..3481d39 100755
+--- a/cuda/mummergpu/src/Makefile
++++ b/cuda/mummergpu/src/Makefile
+@@ -8,10 +8,10 @@ include ../experiments/test_rule.mk
+ CUDA_INSTALL_PATH := $(CUDA_DIR)
+ 
+ # Compilers
+-NVCC       := $(CUDA_INSTALL_PATH)/bin/nvcc 
++NVCC       := $(CUDA_INSTALL_PATH)/bin/nvcc
+ CXX        := g++ -fopenmp $(PROFILE)
+-CC         := gcc 
+-LINK       := g++ -fopenmp -m64 -fPIC $(PROFILE)
++CC         := gcc
++LINK       := g++ -fopenmp -fPIC $(PROFILE)
+ 
+ # Add source files here
+ STATIC_LIB := libmummergpu.a
+@@ -27,15 +27,15 @@ CCFILES		:= \
+ 
+ # Basic directory setup for SDK
+ # (override directories only if they are not already defined)
+-SRCDIR     ?= 
++SRCDIR     ?=
+ ROOTDIR    ?= ..
+ ROOTBINDIR ?= $(ROOTDIR)/bin
+ BINDIR     ?= $(ROOTBINDIR)
+ ROOTOBJDIR ?= obj
+ LIBDIR     := $(ROOTDIR)/lib
+-BINNAME    ?= mummergpu
++BINNAME    ?= mummergpu.so
+ # Includes
+-INCLUDES  += -I. -I$(CUDA_INSTALL_PATH)/include 
++INCLUDES  += -I. -I$(CUDA_INSTALL_PATH)/include
+ 
+ # Libs
+ LIB       := -L$(CUDA_LIB_DIR) -L$(LIBDIR) -lcuda -lcudart -lGL -lGLU ${LIB}
+@@ -64,12 +64,12 @@ CWARN_FLAGS := $(CXXWARN_FLAGS) \
+ 	-Wmain \
+ 
+ # Compiler-specific flags
+-NVCCFLAGS := -Xcompiler "-m64"
+-CXXFLAGS  := -m64 $(CXXWARN_FLAGS)
+-CFLAGS    := -m64 $(CWARN_FLAGS)
++NVCCFLAGS := -shared -Xcompiler "-fPIC"
++CXXFLAGS  := $(CXXWARN_FLAGS) -fPIC -shared
++CFLAGS    := $(CWARN_FLAGS) -fPIC -shared
+ 
+ # Common flags
+-COMMONFLAGS ?= 
++COMMONFLAGS ?=
+ COMMONFLAGS += $(INCLUDES) -DUNIX
+ 
+ # Debug/release configuration
+@@ -78,7 +78,7 @@ ifeq ($(dbg),1)
+ 	NVCCFLAGS   += -D_DEBUG
+ 	BINSUBDIR   := debug
+ 	LIBSUFFIX   := D
+-else 
++else
+ 	COMMONFLAGS += -O3
+ 	BINSUBDIR   := release
+ 	LIBSUFFIX   :=
+diff --git a/cuda/mummergpu/src/suffix-tree.cpp b/cuda/mummergpu/src/suffix-tree.cpp
+index 7f8d141..3c9e25c 100755
+--- a/cuda/mummergpu/src/suffix-tree.cpp
++++ b/cuda/mummergpu/src/suffix-tree.cpp
+@@ -15,6 +15,7 @@
+ #include <errno.h>
+ #include <assert.h>
+ #include <stdint.h> 
++#include <unistd.h>
+ 
+ #define ulong4 uint32_t
+ #define uint4 uint32_t
+diff --git a/cuda/myocyte/Makefile b/cuda/myocyte/Makefile
+index b7d27d6..0c171f4 100755
+--- a/cuda/myocyte/Makefile
++++ b/cuda/myocyte/Makefile
+@@ -8,12 +8,12 @@
+ 	# command n
+ 
+ # link objects(binaries) together
+-myocyte.out:		main.o
++myocyte.so:		main.o
+ 	nvcc	main.o \
+ 				-I/usr/local/cuda/include \
+ 				-L/usr/local/cuda/lib \
+ 				-lm -lcuda -lcudart \
+-                                -o myocyte.out
++                                -o myocyte.so -shared -Xcompiler -fPIC
+ 
+ # compile main function file into object (binary)
+ main.o:	define.c \
+@@ -36,8 +36,8 @@ main.o:	define.c \
+ 				file.c \
+ 				timer.c
+ 	nvcc	main.cu \
+-				-c -O3 -g
++				-c -O3 -g -shared -Xcompiler -fPIC
+ 
+ # delete all object files
+ clean:
+-	rm *.o *.out output.txt
++	rm *.o *.so output.txt
+diff --git a/cuda/nn/Makefile b/cuda/nn/Makefile
+index 2c60101..536afa5 100755
+--- a/cuda/nn/Makefile
++++ b/cuda/nn/Makefile
+@@ -1,16 +1,16 @@
+ include ../../common/make.config
+ 
+-LOCAL_CC = gcc -g -O3 -Wall
+-CC := $(CUDA_DIR)/bin/nvcc
++LOCAL_CC = gcc -g -O3 -Wall -shared -fPIC
++CC := $(CUDA_DIR)/bin/nvcc -shared -Xcompiler -fPIC
+ 
+ all : nn hurricane_gen
+ 
+ clean :
+-	rm -rf *.o nn hurricane_gen
++	rm -rf *.o nn.so hurricane_gen
+ 
+ nn : nn_cuda.cu
+ 	$(CC) -cuda nn_cuda.cu
+-	$(CC) -o nn nn_cuda.cu
++	$(CC) -o nn.so nn_cuda.cu
+ 
+ hurricane_gen : hurricane_gen.c
+ 	$(LOCAL_CC) -o $@ $< -lm
+diff --git a/cuda/nn/filelist_4 b/cuda/nn/filelist_4
+index dc980d2..5dcf0d8 100755
+--- a/cuda/nn/filelist_4
++++ b/cuda/nn/filelist_4
+@@ -1,4 +1,4 @@
+-../../data/nn/cane4_0.db
+-../../data/nn/cane4_1.db
+-../../data/nn/cane4_2.db
+-../../data/nn/cane4_3.db
++../utils/workloads/rodinia/data/nn/cane4_0.db
++../utils/workloads/rodinia/data/nn/cane4_1.db
++../utils/workloads/rodinia/data/nn/cane4_2.db
++../utils/workloads/rodinia/data/nn/cane4_3.db
+diff --git a/cuda/nw/Makefile b/cuda/nw/Makefile
+index e87b602..148cd8f 100755
+--- a/cuda/nw/Makefile
++++ b/cuda/nw/Makefile
+@@ -1,12 +1,12 @@
+ include ../../common/make.config
+ 
+-CC := $(CUDA_DIR)/bin/nvcc
++CC := $(CUDA_DIR)/bin/nvcc -shared -Xcompiler -fPIC
+ 
+ INCLUDE := $(CUDA_DIR)/include
+ 
+ SRC = needle.cu
+ 
+-EXE = needle
++EXE = needle.so
+ 
+ release: $(SRC)
+ 	$(CC) ${KERNEL_DIM} $(SRC) -o $(EXE) -I$(INCLUDE) -L$(CUDA_LIB_DIR) 
+diff --git a/cuda/particlefilter/Makefile b/cuda/particlefilter/Makefile
+index a7db5ca..f8f78e7 100755
+--- a/cuda/particlefilter/Makefile
++++ b/cuda/particlefilter/Makefile
+@@ -1,18 +1,18 @@
+-#makefile
+-
+-include ../../common/make.config
+-
+-CC := $(CUDA_DIR)/bin/nvcc
+-
+-INCLUDE := $(CUDA_DIR)/include
+-
+-all: naive float
+-
+-naive: ex_particle_CUDA_naive_seq.cu
+-	$(CC) -I$(INCLUDE) -L$(CUDA_LIB_DIR) -lcuda -g -lm -O3 -use_fast_math -arch sm_13 ex_particle_CUDA_naive_seq.cu -o particlefilter_naive
+-	
+-float: ex_particle_CUDA_float_seq.cu
+-	$(CC) -I$(INCLUDE) -L$(CUDA_LIB_DIR) -lcuda -g -lm -O3 -use_fast_math -arch sm_13 ex_particle_CUDA_float_seq.cu -o particlefilter_float
+-
+-clean:
+-	rm particlefilter_naive particlefilter_float
++#makefile
++
++include ../../common/make.config
++
++CC := $(CUDA_DIR)/bin/nvcc -shared -Xcompiler -fPIC
++
++INCLUDE := $(CUDA_DIR)/include
++
++all: naive float
++
++naive: ex_particle_CUDA_naive_seq.cu
++	$(CC) -I$(INCLUDE) -L$(CUDA_LIB_DIR) -lcuda -g -lm -O3 -use_fast_math -arch sm_72 ex_particle_CUDA_naive_seq.cu -o particlefilter_naive
++
++float: ex_particle_CUDA_float_seq.cu
++	$(CC) -I$(INCLUDE) -L$(CUDA_LIB_DIR) -lcuda -g -lm -O3 -use_fast_math -arch sm_72 ex_particle_CUDA_float_seq.cu -o particlefilter_float.so
++
++clean:
++	rm particlefilter_naive particlefilter_float.so
+diff --git a/cuda/pathfinder/Makefile b/cuda/pathfinder/Makefile
+index 62c9592..e51359f 100755
+--- a/cuda/pathfinder/Makefile
++++ b/cuda/pathfinder/Makefile
+@@ -1,11 +1,11 @@
+ include ../../common/make.config
+ 
+-CC := $(CUDA_DIR)/bin/nvcc
++CC := $(CUDA_DIR)/bin/nvcc -shared -Xcompiler -fPIC
+ INCLUDE := $(CUDA_DIR)/include
+ 
+ SRC = pathfinder.cu
+ 
+-EXE = pathfinder
++EXE = pathfinder.so
+ 
+ release:
+ 	$(CC) $(SRC) -o $(EXE) -I$(INCLUDE) -L$(CUDA_LIB_DIR) 
+diff --git a/cuda/srad/srad_v1/makefile b/cuda/srad/srad_v1/makefile
+index 49dac74..c573a0d 100755
+--- a/cuda/srad/srad_v1/makefile
++++ b/cuda/srad/srad_v1/makefile
+@@ -18,7 +18,7 @@ a.out:		main.o
+ 	$(CC)	main.o \
+ 				-I$(INCLUDE) \
+ 				-L$(CUDA_LIB_DIR)  \
+-				-lm -lcuda -lcudart -o srad
++				-lm -lcuda -lcudart -o srad.so -shared -Xcompiler -fPIC
+ 
+ # compile main function file into object (binary)
+ main.o: 	main.cu \
+@@ -31,8 +31,8 @@ main.o: 	main.cu \
+ 				srad2_kernel.cu \
+ 				compress_kernel.cu
+ 	nvcc	main.cu \
+-				-c -O3 -arch sm_35
++				-c -O3 -arch sm_72 -shared -Xcompiler -fPIC
+ 
+ # delete all object files
+ clean:
+-	rm *.o srad
++	rm *.o srad.so
+diff --git a/cuda/srad/srad_v2/Makefile b/cuda/srad/srad_v2/Makefile
+index 5964155..9002a42 100755
+--- a/cuda/srad/srad_v2/Makefile
++++ b/cuda/srad/srad_v2/Makefile
+@@ -1,12 +1,12 @@
+ include ../../../common/make.config
+ 
+-CC := $(CUDA_DIR)/bin/nvcc
++CC := $(CUDA_DIR)/bin/nvcc -shared -Xcompiler -fPIC
+ 
+ INCLUDE := $(CUDA_DIR)/include
+ 
+ SRC = srad.cu
+ 
+-EXE = srad
++EXE = srad.so
+ 
+ release: $(SRC)
+ 	$(CC) $(KERNEL_DIM) $(SRC) -o $(EXE) -I$(INCLUDE) -L$(CUDA_LIB_DIR) 
+diff --git a/cuda/streamcluster/Makefile b/cuda/streamcluster/Makefile
+index 7d5624f..a0744ef 100755
+--- a/cuda/streamcluster/Makefile
++++ b/cuda/streamcluster/Makefile
+@@ -1,34 +1,33 @@
+-include ../../common/make.config
+-
+-NVCC = $(CUDA_DIR)/bin/nvcc
+-
+-NVCC_FLAGS = -I$(CUDA_DIR)/include
+-
+-TARGET_G = sc_gpu
+-
+-
+-# make dbg=1 tells nvcc to add debugging symbols to the binary
+-ifeq ($(dbg),1)
+-	NVCC_FLAGS += -g -O0
+-else
+-	NVCC_FLAGS += -O3
+-endif
+-
+-# make emu=1 compiles the CUDA kernels for emulation
+-ifeq ($(emu),1)
+-	NVCC_FLAGS += -deviceemu
+-endif
+-
+-# make dp=1 compiles the CUDA kernels with double-precision support
+-ifeq ($(dp),1)
+-	NVCC_FLAGS += --gpu-name sm_13
+-endif
+-
+-
+-$(TARGET_G): streamcluster_cuda_cpu.cpp streamcluster_cuda.cu streamcluster_header.cu
+-	$(NVCC) $(NVCC_FLAGS) streamcluster_cuda_cpu.cpp streamcluster_cuda.cu streamcluster_header.cu -o $(TARGET_G) -lcuda
+-	
+-
+-clean:
+-	rm -f *.o *~ *.txt $(TARGET_G) *.linkinfo
+-	
++include ../../common/make.config
++
++NVCC = $(CUDA_DIR)/bin/nvcc -shared -Xcompiler -fPIC
++
++NVCC_FLAGS = -I$(CUDA_DIR)/include
++
++TARGET_G = sc_gpu.so
++
++
++# make dbg=1 tells nvcc to add debugging symbols to the binary
++ifeq ($(dbg),1)
++	NVCC_FLAGS += -g -O0
++else
++	NVCC_FLAGS += -O3
++endif
++
++# make emu=1 compiles the CUDA kernels for emulation
++ifeq ($(emu),1)
++	NVCC_FLAGS += -deviceemu
++endif
++
++# make dp=1 compiles the CUDA kernels with double-precision support
++ifeq ($(dp),1)
++	NVCC_FLAGS += --gpu-name sm_72
++endif
++
++
++$(TARGET_G): streamcluster_cuda_cpu.cpp streamcluster_cuda.cu streamcluster_header.cu
++	$(NVCC) $(NVCC_FLAGS) streamcluster_cuda_cpu.cpp streamcluster_cuda.cu streamcluster_header.cu -o $(TARGET_G) -lcuda
++
++
++clean:
++	rm -f *.o *~ *.txt $(TARGET_G) *.linkinfo
+diff --git a/data/b+tree/command.txt b/data/b+tree/command.txt
+index 8dd27b8..c75bf5c 100644
+--- a/data/b+tree/command.txt
++++ b/data/b+tree/command.txt
+@@ -1,4 +1,9 @@
+-j 6000 3000
+-k 10000
+-
+-
++j 1000000 30000000
++k 65530
++k 65530
++k 65530
++k 65530
++k 65530
++k 65530
++k 65530
++k 65530
+diff --git a/data/bfs/inputGen/Makefile b/data/bfs/inputGen/Makefile
+index cb6dbe9..fa344ca 100644
+--- a/data/bfs/inputGen/Makefile
++++ b/data/bfs/inputGen/Makefile
+@@ -1,4 +1,4 @@
+-FLAGS := -std=c++0x -fopenmp
++FLAGS := -std=c++11 -fopenmp
+ 
+ graphgen: graphgen.cpp
+ 	g++ $(FLAGS) -o $@ $<
+diff --git a/data/bfs/inputGen/graphgen.cpp b/data/bfs/inputGen/graphgen.cpp
+index d9eb83e..6cc170f 100644
+--- a/data/bfs/inputGen/graphgen.cpp
++++ b/data/bfs/inputGen/graphgen.cpp
+@@ -27,10 +27,10 @@
+ #include <climits>
+ 
+ // These names may vary by implementation
+-//#define LINEAR_CONGRUENTIAL_ENGINE linear_congruential_engine
+-#define LINEAR_CONGRUENTIAL_ENGINE linear_congruential
+-//#define UNIFORM_INT_DISTRIBUTION uniform_int_distribution
+-#define UNIFORM_INT_DISTRIBUTION uniform_int
++#define LINEAR_CONGRUENTIAL_ENGINE linear_congruential_engine
++//#define LINEAR_CONGRUENTIAL_ENGINE linear_congruential
++#define UNIFORM_INT_DISTRIBUTION uniform_int_distribution
++//#define UNIFORM_INT_DISTRIBUTION uniform_int
+ 
+ using namespace std;
+ 
+diff --git a/data/hotspot/inputGen/hotspotex.cpp b/data/hotspot/inputGen/hotspotex.cpp
+index 3c78981..124b209 100644
+--- a/data/hotspot/inputGen/hotspotex.cpp
++++ b/data/hotspot/inputGen/hotspotex.cpp
+@@ -7,11 +7,11 @@ Generate larger input files for Hotspot by expanding smaller versions
+ */
+ 
+ 
+-#include "64_128.h"
++//#include "64_128.h"
+ //#include "64_256.h"
+ //#include "1024_2048.h"
+ //#include "1024_4096.h"
+-//#include "1024_8192.h"
++#include "1024_8192.h"
+ //#include "1024_16384.h"
+ 
+ #include <iostream>
+diff --git a/data/hotspot/inputGen/hotspotver.cpp b/data/hotspot/inputGen/hotspotver.cpp
+index c0e1b34..4d649dc 100644
+--- a/data/hotspot/inputGen/hotspotver.cpp
++++ b/data/hotspot/inputGen/hotspotver.cpp
+@@ -7,11 +7,11 @@ Verify accuracy of Hotspot input files generated by HotspotEx
+ */
+ 
+ 
+-#include "64_128.h"
++//#include "64_128.h"
+ //#include "64_256.h"
+ //#include "1024_2048.h"
+ //#include "1024_4096.h"
+-//#include "1024_8192.h"
++#include "1024_8192.h"
+ //#include "1024_16384.h"
+ 
+ #include <iostream>
+diff --git a/openmp/b+tree/Makefile b/openmp/b+tree/Makefile
+index 0cfcb74..58f92b1 100644
+--- a/openmp/b+tree/Makefile
++++ b/openmp/b+tree/Makefile
+@@ -18,7 +18,7 @@ b+tree.out:	./main.o \
+ 			./util/num/num.o \
+ 			-lm \
+ 			$(OMP_LIB) \
+-                        -o b+tree.out
++                        -o b+tree.so -fPIC -shared
+ # ========================================================================================================================================================================================================200
+ #	OBJECTS (COMPILE SOURCE FILES INTO OBJECTS)
+ # ========================================================================================================================================================================================================200
+diff --git a/openmp/backprop/Makefile b/openmp/backprop/Makefile
+index 5db709f..15c4c06 100755
+--- a/openmp/backprop/Makefile
++++ b/openmp/backprop/Makefile
+@@ -4,7 +4,7 @@ CC_FLAGS = -g -fopenmp  -O2
+ 
+ 
+ backprop: backprop.o facetrain.o imagenet.o backprop_kernel.o 
+-	$(CC) $(CC_FLAGS) backprop.o facetrain.o imagenet.o backprop_kernel.o -o backprop -lm
++	$(CC) $(CC_FLAGS) backprop.o facetrain.o imagenet.o backprop_kernel.o -o backprop.so -fPIC -shared -lm
+ 
+ %.o: %.[ch]
+ 	$(CC) $(CC_FLAGS) $< -c
+diff --git a/openmp/backprop/facetrain.c b/openmp/backprop/facetrain.c
+index 5e5a304..8b2fba3 100755
+--- a/openmp/backprop/facetrain.c
++++ b/openmp/backprop/facetrain.c
+@@ -1,45 +1,44 @@
+-#include <stdio.h>
+-#include <stdlib.h>
+-#include <math.h>
+-#include "backprop.h"
+-#include "omp.h"
+-
+-extern char *strcpy();
+-extern void exit();
+-
+-int layer_size = 0;
+-
+-backprop_face()
+-{
+-  BPNN *net;
+-  int i;
+-  float out_err, hid_err;
+-  net = bpnn_create(layer_size, 16, 1); // (16, 1 can not be changed)
++#include <stdio.h>
++#include <stdlib.h>
++#include <math.h>
++#include "backprop.h"
++#include "omp.h"
++
++extern char *strcpy();
++
++int layer_size = 0;
++
++backprop_face()
++{
++  BPNN *net;
++  int i;
++  float out_err, hid_err;
++  net = bpnn_create(layer_size, 16, 1); // (16, 1 can not be changed)
+   printf("Input layer size : %d\n", layer_size);
+   load(net);
+   //entering the training kernel, only one iteration
+   printf("Starting training kernel\n");
+   bpnn_train_kernel(net, &out_err, &hid_err);
+   bpnn_free(net);
+-  printf("Training done\n");
+-}
+-
+-int setup(argc, argv)
+-int argc;
+-char *argv[];
+-{
+-  if(argc!=2){
+-  fprintf(stderr, "usage: backprop <num of input elements>\n");
+-  exit(0);
+-  }
+-
+-  layer_size = atoi(argv[1]);
+-  
+-  int seed;
+-
+-  seed = 7;   
+-  bpnn_initialize(seed);
+-  backprop_face();
+-
+-  exit(0);
+-}
++  printf("Training done\n");
++}
++
++int setup(argc, argv)
++int argc;
++char *argv[];
++{
++  if(argc!=2){
++  fprintf(stderr, "usage: backprop <num of input elements>\n");
++  return 0;
++  }
++
++  layer_size = atoi(argv[1]);
++
++  int seed;
++
++  seed = 7;
++  bpnn_initialize(seed);
++  backprop_face();
++
++  return 0;
++}
+diff --git a/openmp/bfs/Makefile b/openmp/bfs/Makefile
+index e3d3c22..4c2643b 100755
+--- a/openmp/bfs/Makefile
++++ b/openmp/bfs/Makefile
+@@ -1,12 +1,12 @@
+ # C compiler
+ CC = g++
+-ICC = icc
++ICC = g++
+ CC_FLAGS = -g -fopenmp -O2
+ 
+ all: bfs bfs_offload
+ 
+ bfs: bfs.cpp 
+-	$(CC) $(CC_FLAGS) bfs.cpp -o bfs 
++	$(CC) $(CC_FLAGS) bfs.cpp -o bfs.so -fPIC -shared
+ 
+ bfs_offload: bfs.cpp
+ 	$(ICC) $(CC_FLAGS) -DOMP_OFFLOAD bfs.cpp -o bfs_offload
+diff --git a/openmp/cfd/makefile b/openmp/cfd/makefile
+index 3674b6c..d43f9f1 100755
+--- a/openmp/cfd/makefile
++++ b/openmp/cfd/makefile
+@@ -15,10 +15,10 @@ euler3d_cpu: euler3d_cpu.cpp
+ 	g++ -O3 -Dblock_length=$(OMP_NUM_THREADS) -fopenmp euler3d_cpu.cpp -o euler3d_cpu
+ 
+ euler3d_cpu_offload:
+-	icc -g -O3 -DOMP_OFFLOAD -Dblock_length=$(MIC_OMP_NUM_THREADS) -fopenmp -offload-option,mic,compiler,"-no-opt-prefetch" euler3d_cpu.cpp -o euler3d_cpu_offload
++	g++ -g -O3 -DOMP_OFFLOAD -Dblock_length=$(MIC_OMP_NUM_THREADS) -fopenmp -offload-option,mic,compiler,"-no-opt-prefetch" euler3d_cpu.cpp -o euler3d_cpu_offload
+ 
+ euler3d_cpu_double: euler3d_cpu_double.cpp
+-	g++ -O3 -Dblock_length=$(OMP_NUM_THREADS) -fopenmp euler3d_cpu_double.cpp -o euler3d_cpu_double
++	g++ -O3 -Dblock_length=$(OMP_NUM_THREADS) -fopenmp euler3d_cpu_double.cpp -o euler3d_cpu_double.so -fPIC -shared
+ 
+ #pre_euler3d: pre_euler3d.cu
+ #	nvcc -Xptxas -v -O3 --gpu-architecture=compute_13 --gpu-code=compute_13 pre_euler3d.cu -o pre_euler3d -I$(CUDA_SDK_PATH)/common/inc  -L$(CUDA_SDK_PATH)/lib  -lcutil
+diff --git a/openmp/heartwall/AVI/makefile b/openmp/heartwall/AVI/makefile
+index 9b1b96a..5cd950b 100755
+--- a/openmp/heartwall/AVI/makefile
++++ b/openmp/heartwall/AVI/makefile
+@@ -1,13 +1,13 @@
+-all: avimod.o avilib.o
+-
+-# compile supporting function file into object (binary)
+-avimod.o: avilib.h avimod.c 
+-	gcc -c avimod.c
+-
+-# compile supporting function file into object (binary)
+-avilib.o: avilib.h avilib.c
+-	gcc -c avilib.c
+-
+-# delete files
+-clean:
+-	rm *.o *.out
++all: avimod.o avilib.o
++
++# compile supporting function file into object (binary)
++avimod.o: avilib.h avimod.c
++	gcc -c avimod.c -fPIC -shared
++
++# compile supporting function file into object (binary)
++avilib.o: avilib.h avilib.c
++	gcc -c avilib.c -fPIC -shared
++
++# delete files
++clean:
++	rm *.o *.out
+diff --git a/openmp/heartwall/makefile b/openmp/heartwall/makefile
+index d76de93..b5717f1 100755
+--- a/openmp/heartwall/makefile
++++ b/openmp/heartwall/makefile
+@@ -1,19 +1,19 @@
+-
+-ifdef OUTPUT
+-override OUTPUT = -DOUTPUT
+-endif
+-
+-# link objects(binaries) together
+-heartwall: main.o ./AVI/avilib.o ./AVI/avimod.o
+-	gcc main.o ./AVI/avilib.o ./AVI/avimod.o -lm -fopenmp -o heartwall
+-
+-# compile main function file into object (binary)
+-main.o: main.c define.c kernel.c
+-	gcc $(OUTPUT) main.c -I./AVI -c -O3 -fopenmp
+-
+-./AVI/avilib.o ./AVI/avimod.o:
+-	cd AVI; make;
+-
+-# delete all object files
+-clean:
+-	rm -f *.o AVI/*.o heartwall
++
++ifdef OUTPUT
++override OUTPUT = -DOUTPUT
++endif
++
++# link objects(binaries) together
++heartwall: main.o ./AVI/avilib.o ./AVI/avimod.o
++	gcc main.o ./AVI/avilib.o ./AVI/avimod.o -lm -fopenmp -o heartwall.so -fPIC -shared
++
++# compile main function file into object (binary)
++main.o: main.c define.c kernel.c
++	gcc $(OUTPUT) main.c -I./AVI -c -O3 -fopenmp -fPIC -shared
++
++./AVI/avilib.o ./AVI/avimod.o:
++	cd AVI; make;
++
++# delete all object files
++clean:
++	rm -f *.o AVI/*.o heartwall
+diff --git a/openmp/hotspot/Makefile b/openmp/hotspot/Makefile
+index 980717b..43c0d9f 100755
+--- a/openmp/hotspot/Makefile
++++ b/openmp/hotspot/Makefile
+@@ -1,6 +1,6 @@
+ # C compiler
+ CC = g++
+-ICC = icc
++ICC = g++
+ CC_FLAGS = -g -fopenmp -O2
+ OFFLOAD_CC_FLAGS = -offload-option,mic,compiler,"-no-opt-prefetch"
+ 
+@@ -8,7 +8,7 @@ all: hotspot hotspot_offload
+ 
+ 
+ hotspot: hotspot_openmp.cpp Makefile 
+-	$(CC) $(CC_FLAGS) hotspot_openmp.cpp -o hotspot 
++	$(CC) $(CC_FLAGS) hotspot_openmp.cpp -o hotspot.so -fPIC -shared
+ 
+ hotspot_offload: hotspot_openmp.cpp Makefile
+ 	$(ICC) $(CC_FLAGS) $(OFFLOAD_CC_FLAGS) -DOMP_OFFLOAD hotspot_openmp.cpp -o hotspot_offload
+diff --git a/openmp/hotspot3D/Makefile b/openmp/hotspot3D/Makefile
+index 379307d..9ab849b 100755
+--- a/openmp/hotspot3D/Makefile
++++ b/openmp/hotspot3D/Makefile
+@@ -3,7 +3,7 @@ CCFLAGS = -g -fopenmp -O3
+ OUTPUT = *.out
+ 
+ 3D:
+-	$(CC) -o 3D $(CCFLAGS) 3D.c -lm 
++	$(CC) -o 3D.so $(CCFLAGS) 3D.c -lm -fPIC -shared
+ 
+ clean:
+ 	rm -f 3D $(OUTPUT)
+diff --git a/openmp/kmeans/kmeans_openmp/Makefile b/openmp/kmeans/kmeans_openmp/Makefile
+index b50115b..249a2ad 100755
+--- a/openmp/kmeans/kmeans_openmp/Makefile
++++ b/openmp/kmeans/kmeans_openmp/Makefile
+@@ -3,7 +3,7 @@ CC = gcc
+ CC_FLAGS = -g -fopenmp -O2 
+ 
+ kmeans: cluster.o getopt.o kmeans.o kmeans_clustering.o 
+-	$(CC) $(CC_FLAGS) cluster.o getopt.o kmeans.o kmeans_clustering.o  -o kmeans
++	$(CC) $(CC_FLAGS) cluster.o getopt.o kmeans.o kmeans_clustering.o  -o kmeans.so -fPIC -shared
+ 
+ %.o: %.[ch]
+ 	$(CC) $(CC_FLAGS) $< -c
+diff --git a/openmp/lavaMD/makefile b/openmp/lavaMD/makefile
+index f3f35e1..75dbf2f 100755
+--- a/openmp/lavaMD/makefile
++++ b/openmp/lavaMD/makefile
+@@ -25,7 +25,7 @@ a.out:		main.o \
+ 			./util/timer/timer.o \
+ 			-lm \
+ 			$(OMP_LIB) \
+-			-o lavaMD
++			-o lavaMD.so -fPIC -shared
+ # compile function files into objects (binaries)
+ main.o:		main.h \
+ 			main.c \
+diff --git a/openmp/leukocyte/OpenMP/Makefile b/openmp/leukocyte/OpenMP/Makefile
+index ff25dda..ac8c502 100755
+--- a/openmp/leukocyte/OpenMP/Makefile
++++ b/openmp/leukocyte/OpenMP/Makefile
+@@ -6,15 +6,16 @@ endif
+ # C compiler
+ CC = gcc
+ CC_FLAGS = -g -O3 -Wall -fopenmp -I$(MATRIX_DIR)
++CFLAGS += $(CC_FLAGS)
+ 
+ # Matrix library path
+ MATRIX_DIR = ../meschach_lib
+ 
+ 
+ leukocyte: detect_main.o avilib.o find_ellipse.o track_ellipse.o misc_math.o $(MATRIX_DIR)/meschach.a
+-	$(CC) $(CC_FLAGS) -lm avilib.o find_ellipse.o track_ellipse.o misc_math.o detect_main.o -o leukocyte -lm $(MATRIX_DIR)/meschach.a -lpthread
++	$(CC) $(CC_FLAGS) -lm avilib.o find_ellipse.o track_ellipse.o misc_math.o detect_main.o -o leukocyte.so -lm $(MATRIX_DIR)/meschach.a -lpthread -fPIC -shared
+ 
+-%.o: %.[ch]
++%.o: %.c %.h
+ 	$(CC) $(OUTPUT) $(CC_FLAGS) $< -c
+ 
+ detect_main.o: find_ellipse.h track_ellipse.h avilib.h
+diff --git a/openmp/leukocyte/meschach_lib/makefile b/openmp/leukocyte/meschach_lib/makefile
+index 08bf06e..18fb933 100755
+--- a/openmp/leukocyte/meschach_lib/makefile
++++ b/openmp/leukocyte/meschach_lib/makefile
+@@ -19,7 +19,7 @@ RANLIB = ranlib
+ 
+ # CFLAGS = -O -g
+ # CFLAGS = -pg -g
+-CFLAGS = -O
++CFLAGS = -O -fPIC -shared
+ 
+ 
+ .c.o:
+diff --git a/openmp/lud/omp/Makefile b/openmp/lud/omp/Makefile
+index a095f0c..b3ce278 100755
+--- a/openmp/lud/omp/Makefile
++++ b/openmp/lud/omp/Makefile
+@@ -91,9 +91,9 @@ OBJECTS         = $(addsuffix .o,$(BASENAMES))
+ # ------------  make the executable (the default goal)  ------------------------
+ $(EXECUTABLE):	$(OBJECTS)
+ ifeq ($(strip $(CPP_SOURCES)),)
+-	$(CC)  $(ALL_LFLAGS) -o $(EXECUTABLE) $(OBJECTS) $(LOCAL_LIBSS) $(GLOBAL_LIBSS) $(SYS_LIBS)
++	$(CC)  $(ALL_LFLAGS) -o $(EXECUTABLE).so -fPIC -shared $(OBJECTS) $(LOCAL_LIBSS) $(GLOBAL_LIBSS) $(SYS_LIBS)
+ else
+-	$(CXX) $(ALL_LFLAGS) -o $(EXECUTABLE) $(OBJECTS) $(LOCAL_LIBSS) $(GLOBAL_LIBSS) $(SYS_LIBS)
++	$(CXX) $(ALL_LFLAGS) -o $(EXECUTABLE).so -fPIC -shared $(OBJECTS) $(LOCAL_LIBSS) $(GLOBAL_LIBSS) $(SYS_LIBS)
+ endif
+ 
+ # ------------  make the objects  ----------------------------------------------
+diff --git a/openmp/lud/omp/Makefile.offload b/openmp/lud/omp/Makefile.offload
+index 0e0a2fc..4b9dc62 100644
+--- a/openmp/lud/omp/Makefile.offload
++++ b/openmp/lud/omp/Makefile.offload
+@@ -12,11 +12,11 @@ PROFILE        := NO
+ EXECUTABLE      := lud_omp_offload
+ 
+ # ------------  list of all source files  --------------------------------------
+-SOURCES         := lud.c lud_omp.c ../common/common.c 
++SOURCES         := lud.c lud_omp.c ../common/common.c
+ 
+ # ------------  compiler  ------------------------------------------------------
+-CC              := icc
+-CXX             := icc
++CC              := g++
++CXX             := g++
+ 
+ # ------------  compiler flags  ------------------------------------------------  -qopt-gather-scatter-unroll=7
+ DEBUG_CFLAGS    := -Wall -O0 -g
+diff --git a/openmp/mummergpu/src/Makefile b/openmp/mummergpu/src/Makefile
+index a567bad..d456467 100755
+--- a/openmp/mummergpu/src/Makefile
++++ b/openmp/mummergpu/src/Makefile
+@@ -8,10 +8,10 @@ include ../experiments/test_rule.mk
+ CUDA_INSTALL_PATH := $(CUDA_DIR)
+ 
+ # Compilers
+-NVCC       := $(CUDA_INSTALL_PATH)/bin/nvcc 
++NVCC       := $(CUDA_INSTALL_PATH)/bin/nvcc
+ CXX        := g++ -fopenmp $(PROFILE)
+-CC         := gcc 
+-LINK       := g++ -fopenmp -m64 -fPIC $(PROFILE)
++CC         := g++
++LINK       := g++ -fopenmp $(PROFILE)
+ 
+ # Add source files here
+ STATIC_LIB := libmummergpu.a
+@@ -64,12 +64,12 @@ CWARN_FLAGS := $(CXXWARN_FLAGS) \
+ 	-Wmain \
+ 
+ # Compiler-specific flags
+-NVCCFLAGS := -Xcompiler "-m64"
+-CXXFLAGS  := -m64 $(CXXWARN_FLAGS)
+-CFLAGS    := -m64 $(CWARN_FLAGS)
++NVCCFLAGS := -Xcompiler ""
++CXXFLAGS  := $(CXXWARN_FLAGS)
++CFLAGS    := $(CWARN_FLAGS)
+ 
+ # Common flags
+-COMMONFLAGS ?= 
++COMMONFLAGS ?=
+ COMMONFLAGS += $(INCLUDES) -DUNIX
+ 
+ # Debug/release configuration
+@@ -143,7 +143,7 @@ BINOBJS= \
+     $(OBJDIR)/mummergpu_main.cpp_o
+ 
+ $(BINDIR)/mummergpu: makedirectories $(LIBDIR)/libmummergpu$(LIBSUFFIX).a $(BINOBJS)
+-	$(LINK) -o $(BINDIR)/$(BINNAME)  $(BINOBJS) -lmummergpu$(LIBSUFFIX) $(LIB) 
++	$(LINK) -o $(BINDIR)/$(BINNAME).so -fPIC -shared $(BINOBJS) -lmummergpu$(LIBSUFFIX) $(LIB)
+ 		
+ 
+ ##############################################################################
+diff --git a/openmp/myocyte/Makefile b/openmp/myocyte/Makefile
+index 5b40848..8eb1318 100755
+--- a/openmp/myocyte/Makefile
++++ b/openmp/myocyte/Makefile
+@@ -2,25 +2,25 @@
+ # target: dependencies
+ 	# command 1
+ 	# command 2
+-          # .
+-          # .
+-          # .
+-	# command n
+-
+-# link objects(binaries) together
+-myocyte.out:	main.o
+-	gcc	main.o \
+-			-lm -fopenmp \
+-	-o myocyte.out
+-
+-# compile main function file into object (binary)
+-main.o: 	main.c \
+-				define.c \
+-				ecc.c \
+-				cam.c \
+-				fin.c \
+-				master.c \
+-				embedded_fehlberg_7_8.c \
++          # .
++          # .
++          # .
++	# command n
++
++# link objects(binaries) together
++myocyte.out:	main.o
++	gcc	main.o \
++			-lm -fopenmp \
++	-o myocyte.so -fPIC -shared
++
++# compile main function file into object (binary)
++main.o: 	main.c \
++				define.c \
++				ecc.c \
++				cam.c \
++				fin.c \
++				master.c \
++				embedded_fehlberg_7_8.c \
+ 				solver.c \
+ 				file.c \
+ 				timer.c
+diff --git a/openmp/nn/Makefile b/openmp/nn/Makefile
+index a7904ed..1de5a9b 100755
+--- a/openmp/nn/Makefile
++++ b/openmp/nn/Makefile
+@@ -9,7 +9,7 @@ clean :
+ 	rm -rf *.o nn
+ 
+ nn : nn_openmp.c
+-	$(CC) -o $@ $< $(LDFLAGS) $(CFLAGS) 
++	$(CC) -o $@.so $< $(LDFLAGS) $(CFLAGS) -fPIC -shared
+ 
+ hurricane_gen : hurricane_gen.c
+ 	$(LOCAL_CC) -o $@ $< -lm
+diff --git a/openmp/nn/filelist_4 b/openmp/nn/filelist_4
+index dc980d2..5dcf0d8 100755
+--- a/openmp/nn/filelist_4
++++ b/openmp/nn/filelist_4
+@@ -1,4 +1,4 @@
+-../../data/nn/cane4_0.db
+-../../data/nn/cane4_1.db
+-../../data/nn/cane4_2.db
+-../../data/nn/cane4_3.db
++../utils/workloads/rodinia/data/nn/cane4_0.db
++../utils/workloads/rodinia/data/nn/cane4_1.db
++../utils/workloads/rodinia/data/nn/cane4_2.db
++../utils/workloads/rodinia/data/nn/cane4_3.db
+diff --git a/openmp/nw/Makefile b/openmp/nw/Makefile
+index f49dd2f..51189eb 100755
+--- a/openmp/nw/Makefile
++++ b/openmp/nw/Makefile
+@@ -1,13 +1,13 @@
+ # C compiler
+ CC = g++
+-ICC = icc
++ICC = g++
+ CC_FLAGS = -g -O3 -fopenmp
+ OFFLOAD_CC_FLAGS = -offload-option,mic,compiler,"-no-opt-prefetch"
+ 
+ all: needle needle_offload
+ 
+ needle: 
+-	$(CC) $(CC_FLAGS) needle.cpp -o needle 
++	$(CC) $(CC_FLAGS) needle.cpp -o needle.so -fPIC -shared
+ 
+ needle_offload:
+ 	$(ICC) $(CC_FLAGS) $(OFFLOAD_CC_FLAGS) -DOMP_OFFLOAD needle.cpp -o needle_offload
+diff --git a/openmp/particlefilter/Makefile b/openmp/particlefilter/Makefile
+index 863c6d7..c96cb4d 100755
+--- a/openmp/particlefilter/Makefile
++++ b/openmp/particlefilter/Makefile
+@@ -1,12 +1,12 @@
+-#makefile
+-
+-openmp: ex_particle_OPENMP_seq.c
+-	gcc -O3 -ffast-math -fopenmp ex_particle_OPENMP_seq.c -o particle_filter -lm 
+-
+-
+-icc_openmp: ex_particle_OPENMP_seq.c
+-	icc -O3 -fast -openmp ex_particle_OPENMP_seq.c -o particle_filter
+-
+-
+-clean:
+-	rm particle_filter
++#makefile
++
++openmp: ex_particle_OPENMP_seq.c
++	gcc -O3 -ffast-math -fopenmp ex_particle_OPENMP_seq.c -o particle_filter.so -lm  -fPIC -shared
++
++
++icc_openmp: ex_particle_OPENMP_seq.c
++	g++ -O3 -fast -openmp ex_particle_OPENMP_seq.c -o particle_filter
++
++
++clean:
++	rm particle_filter
+diff --git a/openmp/pathfinder/Makefile b/openmp/pathfinder/Makefile
+index 5f7f07a..a02caaf 100755
+--- a/openmp/pathfinder/Makefile
++++ b/openmp/pathfinder/Makefile
+@@ -4,7 +4,7 @@ EXE = pathfinder
+ FLAGS = -fopenmp
+ 
+ release:
+-	$(CC) $(SRC) $(FLAGS) -o $(EXE)
++	$(CC) $(SRC) $(FLAGS) -o $(EXE).so -fPIC -shared
+ 
+ debug:
+ 	$(CC) $(SRC) -g -Wall -o $(EXE)
+diff --git a/openmp/pathfinder/timer.h b/openmp/pathfinder/timer.h
+index 3db941c..92eb31a 100755
+--- a/openmp/pathfinder/timer.h
++++ b/openmp/pathfinder/timer.h
+@@ -3,17 +3,21 @@
+ #include <stdint.h>
+ #include <stdlib.h>
+ 
+-// #define BENCH_PRINT
+-
+-
+-/*----------- using cycle counter ------------*/
+-     __inline__ uint64_t rdtsc() 
+-     {
+-          uint32_t lo, hi;
+-             /* We cannot use "=A", since this would use %rax on x86_64 */
+-             __asm__ __volatile__ ("rdtsc" : "=a" (lo), "=d" (hi));
+-                return (uint64_t)hi << 32 | lo;
+-     }
++// #define BENCH_PRINT
++
++
++///*----------- using cycle counter ------------*/
++//     __inline__ uint64_t rdtsc()
++//     {
++//          uint32_t lo, hi;
++//             /* We cannot use "=A", since this would use %rax on x86_64 */
++//             __asm__ __volatile__ ("rdtsc" : "=a" (lo), "=d" (hi));
++//                return (uint64_t)hi << 32 | lo;
++//     }
++       __inline__ uint64_t rdtsc()
++       {
++        return 1;
++       }
+ 
+ unsigned long long start_cycles;
+ #define startCycle() (start_cycles = rdtsc())
+diff --git a/openmp/srad/srad_v1/makefile b/openmp/srad/srad_v1/makefile
+index 69226be..49a152d 100755
+--- a/openmp/srad/srad_v1/makefile
++++ b/openmp/srad/srad_v1/makefile
+@@ -1,24 +1,24 @@
+ # Example
+ # target: dependencies
+ 	# command 1
+-	# command 2
+-          # .
+-          # .
+-          # .
+-	# command n
+-
+-# link objects(binaries) together
+-a.out:	main.o
+-	gcc	main.o \
+-			-lm -fopenmp -o srad
+-
+-# compile main function file into object (binary)
+-main.o: 	main.c \
+-				define.c \
+-				graphics.c
+-	gcc	main.c \
+-			-c -O3 -fopenmp
+-
+-# delete all object files
++	# command 2
++          # .
++          # .
++          # .
++	# command n
++
++# link objects(binaries) together
++a.out:	main.o
++	gcc	main.o \
++			-lm -fopenmp -o srad.so -fPIC -shared
++
++# compile main function file into object (binary)
++main.o: 	main.c \
++				define.c \
++				graphics.c
++	gcc	main.c \
++			-c -O3 -fopenmp
++
++# delete all object files
+ clean:
+ 	rm *.o srad
+diff --git a/openmp/srad/srad_v2/Makefile b/openmp/srad/srad_v2/Makefile
+index 369e83d..dd9a4ff 100755
+--- a/openmp/srad/srad_v2/Makefile
++++ b/openmp/srad/srad_v2/Makefile
+@@ -3,7 +3,7 @@ CC = g++
+ CC_FLAGS = -g -fopenmp -O2
+ 
+ bfs: 
+-	$(CC) $(CC_FLAGS) srad.cpp -o srad 
++	$(CC) $(CC_FLAGS) srad.cpp -o srad.so -fPIC -shared
+ 
+ clean:
+ 	rm -f srad
+diff --git a/openmp/streamcluster/Makefile b/openmp/streamcluster/Makefile
+index e36aa78..76d0404 100755
+--- a/openmp/streamcluster/Makefile
++++ b/openmp/streamcluster/Makefile
+@@ -4,21 +4,21 @@ TARGET_C = sc_cpu
+ 
+ TARGET_O = sc_omp
+ 
+-ifdef version
+-  ifeq "$(version)" "parallel"
+-    CXXFLAGS :=	$(CXXFLAGS) -DENABLE_THREADS -pthread
+-  endif
+-endif
+-
+-all: cpu omp
+-
+-cpu:
+-	$(CXX) $(CXXFLAGS) $(LDFLAGS) streamcluster_original.cpp -o $(TARGET_C) $(LIBS) -DENABLE_THREADS -pthread
+-
+-omp:
+-	g++ -O3 -fopenmp -o $(TARGET_O) streamcluster_omp.cpp
+-
+-
+-clean:
+-	rm -f *.o *~ *.txt sc_cpu sc_omp
+-	
++ifdef version
++  ifeq "$(version)" "parallel"
++    CXXFLAGS :=	$(CXXFLAGS) -DENABLE_THREADS -pthread
++  endif
++endif
++
++all: cpu omp
++
++cpu:
++	$(CXX) $(CXXFLAGS) $(LDFLAGS) streamcluster_original.cpp -o $(TARGET_C).so $(LIBS) -DENABLE_THREADS -pthread -fPIC -shared
++
++omp:
++	g++ -O3 -fopenmp -o $(TARGET_O) streamcluster_omp.cpp
++
++
++clean:
++	rm -f *.o *~ *.txt sc_cpu sc_omp
++

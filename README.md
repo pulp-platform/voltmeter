@@ -10,12 +10,6 @@ Voltmeter supports tracing for the following platforms:
 ## Installation \& usage
 The steps for *default* Voltmeter installation and usage are described in the following.
 
-After cloning the repository, update the submodules included in the project.
-```bash
-git submodule update --init --recursive
-git submodule sync --recursive
-```
-
 To compile Voltmeter, first make sure you have configured your manifest `Voltmeter.yml`, then execute
 ```bash
 make all
@@ -78,7 +72,7 @@ Voltmeter comes with many profiling modes and parameters, which you can set up i
   - `trace_dir`: Directory to save the traces; either absolute, or relative to this project's root directory. The traces are binary files and their format depends on the platform and its profiled devices. Details on traces format are documented within Voltmeter source code.
   - `benchmarks`: A sequence of items describing the benchmarks to profile in Voltmeter, with the following parameters:
     - `name`: Name of the benchmark, for labeling purposes.
-    - `path`: Path of the benchmark, either absolue, or relative to this project's root directory. The benchmark must be compiled as a shared library, which is then included in Voltmeter's compilation flow through this parameter. You can usually compile your benchmark as a shared library by using `-o *.so -fPIC -shared`, or `-o *.so -shared -Xcompiler -fPIC` for cross-compilers. Running benchmarks as a shared library is required as some performance counters APIs (i.e., CUPTI) can only access the performance counters data triggered by the same process from where they are being collected. A benchmark suite already prepared for usage with Voltmeter is available under `utils/workloads/`.
+    - `path`: Path of the benchmark, either absolue, or relative to this project's root directory. The benchmark must be compiled as a shared library, which is then included in Voltmeter's compilation flow through this parameter. You can usually compile your benchmark as a shared library by using `-o *.so -fPIC -shared`, or `-o *.so -shared -Xcompiler -fPIC` for cross-compilers. Running benchmarks as a shared library is required as some performance counters APIs (i.e., CUPTI) can only access the performance counters data triggered by the same process from where they are being collected. A benchmark suite already prepared for usage with Voltmeter is available under `utils/workloads/`. Read `utils/workloads/README.md` for further information.
     - `args`: The argument to be passed to the benchmark, as you would pass them through CLI.
 
 ## Publications
