@@ -31,7 +31,8 @@ run: $(VOLTMETER_BIN) $(VOLTMETER_MK) kernelmod
 				$(VOLTMETER_BIN) $(voltmeter_args) $$benchmark || exit 1; \
 			done <<< $(benchmarks); \
 		done; \
-	done
+	done; \
+	echo "Profiling terminated without errors"
 
 # compile voltmeter
 $(VOLTMETER_BIN): $(VOLTMETER_MK)

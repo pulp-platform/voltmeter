@@ -3,8 +3,8 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 # Author: Thomas Benz, ETH Zurich <tbenz@iis.ee.ethz.ch>
-#         Björn Forsberg
-#         Sergio Mazzola
+#         Björn Forsberg, ETH Zurich <bjoernf@iis.ee.ethz.ch>
+#         Sergio Mazzola, ETH Zurich <smazzola@iis.ee.ethz.ch>
 
 -include ../../../../config.mk
 
