@@ -6,7 +6,7 @@
 #         Björn Forsberg, ETH Zurich <bjoernf@iis.ee.ethz.ch>
 #         Sergio Mazzola, ETH Zurich <smazzola@iis.ee.ethz.ch>
 
--include ../../../../config.mk
+-include ../../../config/config.mk
 
 KERNEL_SOURCE = /usr/src/linux-headers-4.9.253-tegra-ubuntu18.04_aarch64/kernel-4.9
 
@@ -17,13 +17,13 @@ kmod = $(name).ko
 all: $(kmod)
 
 $(kmod): $(name).c
-	make ARCH=arm64 -C $(KERNEL_SOURCE) M=$(PLATFORM_DIR)/carmel-module modules
+	make ARCH=arm64 -C $(KERNEL_SOURCE) M=$(abspath .) modules
 
 install: $(kmod)
 	sudo insmod $<
 	sudo touch install
 
 clean:
-	make ARCH=arm64 -C $(KERNEL_SOURCE) M=$(PLATFORM_DIR)/carmel-module clean
+	make ARCH=arm64 -C $(KERNEL_SOURCE) M=$(abspath .) clean
 	sudo rm -f install
 	sudo rmmod $(kmod) || true
