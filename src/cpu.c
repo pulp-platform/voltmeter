@@ -517,7 +517,7 @@ static void free_events_freq_config(cpu_events_freq_config_t *events_freq_config
       free(events_freq_config->core[c].counter_set[s].event_id);
       free(events_freq_config->core[c].counter_set[s].counter);
     }
-    free(events_freq_config->core[c].counter_set);
+    //free(events_freq_config->core[c].counter_set);
   }
   free(events_freq_config->core);
 }

@@ -553,11 +553,11 @@ int main(int argc, char *argv[]) {
 
   // print time
   clock_gettime(CLOCK_REALTIME, &timestamp_b);
-  double sampling_time = (double)((timestamp_b.tv_sec - timestamp_a.tv_sec) * 1e9 + (timestamp_b.tv_nsec - timestamp_a.tv_nsec)) / 1e9;
-  if (sampling_time < 60) {
-    printf_file(log_file, "\nVoltmeter run took %.2f s\n", sampling_time);
+  double runtime = (double)((timestamp_b.tv_sec - timestamp_a.tv_sec) * 1e9 + (timestamp_b.tv_nsec - timestamp_a.tv_nsec)) / 1e9;
+  if (runtime < 60) {
+    printf_file(log_file, "\nVoltmeter run took %.2f s\n", runtime);
   } else {
-    printf_file(log_file, "\nVoltmeter run took %d m, %d s (%.2f s)\n", (unsigned long int)sampling_time/60, (int)sampling_time % 60, sampling_time);
+    printf_file(log_file, "\nVoltmeter run took %d m, %d s (%.2f s)\n", (unsigned long int)runtime/60, (int)runtime % 60, runtime);
   }
   printf_file(log_file, "Exiting...\n\n\n");
 

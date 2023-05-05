@@ -6,6 +6,8 @@
 
 include ./config/config.mk
 
+.PHONY: clean clean_traces $(VOLTMETER_BIN)
+
 all: $(VOLTMETER_BIN)
 
 # run voltmeter (run with sudo)
@@ -48,8 +50,6 @@ kernelmod: $(VOLTMETER_MK)
 	if [ "$(platform)" = "jetson_agx_xavier" ]; then \
 		sudo $(MAKE) -C $(PLATFORM_DIR)/carmel-module install; \
 	fi
-
-.PHONY: clean clean_traces
 
 clean:
 	sudo $(MAKE) -C $(SRC_DIR) clean
