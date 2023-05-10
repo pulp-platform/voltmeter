@@ -55,6 +55,7 @@ Voltmeter comes with many profiling modes and parameters, which you can set up i
 - Profiler parameters:
   - `num_run`: Number of times to repeat each profiled benchmark in a given configuration, useful for averaging purposes. Default is `3`. Data from different runs of the same benchmark in the same configuration is collected in the same trace file.
   - `sample_period_us`: Sample period for performance counter values and power measures (in microseconds). Default is `100000` (i.e., 0.1 s).
+  - `debug_gdb`: Compile Voltmeter's binary with debug information for `gdb`. It can be either `True` or `False`.
 
 - Voltmeter arguments:
   - `events`: Decide how to pass the events to profile to Voltmeter. The possible options are:

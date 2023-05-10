@@ -22,7 +22,10 @@ INC_DIRS += $(includes)
 LIB_DIRS += $(libraries)
 LIBS     += -ldl -lm
 # general flags
-FLAGS    += -MMD -MP -pthread -D_GNU_SOURCE
+FLAGS    += -MMD -MP -pthread -D_GNU_SOURCE -Wall
+ifeq ($(debug_gdb),1)
+FLAGS    += -g
+endif
 # general defines
 DEFINES  += -DCPU=$(profile_cpu) -DGPU=$(profile_gpu)
 DEFINES  += -DNUM_RUN=$(num_run) -DSAMPLE_PERIOD_US=$(sample_period_us)

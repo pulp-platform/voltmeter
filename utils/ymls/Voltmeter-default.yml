@@ -21,6 +21,8 @@ param-profiler:
   num_run: 3
   # profiler sampling period (in microsec)
   sample_period_us: 100000
+  # enable gdb debug information in Voltmeter
+  debug_gdb: False
 
 # arguments for Voltmeter execution mode (see `install/voltmeter --help`)
 arguments:

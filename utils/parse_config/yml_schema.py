@@ -76,6 +76,11 @@
                 'type': 'integer',
                 'default': 100000,
                 'min': 1
+            },
+            'debug_gdb': {
+                'required': True,
+                'type': 'boolean',
+                'default': False
             }
         }
     },
