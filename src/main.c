@@ -139,7 +139,6 @@ int main(int argc, char *argv[]) {
  * └───────────────────────────────────────────────────────┘
  */
 
-  unsigned int log_i = 0;
   char log_file_name[] = "log.temp";
   char *log_file_path = (char*)malloc(strlen(arguments.trace_dir) + strlen(log_file_name) + 10);
   if (log_file_path == NULL){

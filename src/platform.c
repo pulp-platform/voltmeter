@@ -36,6 +36,7 @@ uint32_t setup_platform() {
 #else
 #error "Platform not supported."
 #endif
+  return 0;
 }
 
 void deinit_platform(){

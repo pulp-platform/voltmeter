@@ -44,6 +44,7 @@ extern platform_power_t platform_power;
 void *events_profiler(void *args) {
   profiler_args_t *thread_args = (profiler_args_t*)args;
   struct timespec timestamp_a, timestamp_b;
+  uint32_t sampling_period_us = SAMPLE_PERIOD_US;
   uint64_t sampling_time;
 
 #if CPU
@@ -78,6 +79,7 @@ void *events_profiler(void *args) {
 #endif
 #endif
     fwrite(&platform_power.num_power_rails, sizeof(uint32_t), 1, thread_args->trace_file);
+    fwrite(&sampling_period_us, sizeof(uint32_t), 1, thread_args->trace_file);
   }
 
   // wait for all cores
@@ -169,4 +171,5 @@ void *events_profiler(void *args) {
     disable_pmu_gpu(thread_args->set_id_gpu);
   }
 #endif
+  return (void *)NULL;
 }

@@ -405,7 +405,6 @@ void enable_pmu_gpu(unsigned int set_id) {
 void disable_pmu_gpu(unsigned int set_id) {
 #ifdef __JETSON_AGX_XAVIER
   CUptiResult ret;
-  gpu_events.event_group_sets->sets[set_id];
   for (int g = 0; g < gpu_events.event_group_sets->sets[set_id].numEventGroups; g++){
     ret = cuptiEventGroupDisable(gpu_events.event_group_sets->sets[set_id].eventGroups[g]);
     CHECK_CUPTI_ERROR(ret, "cuptiEventGroupDisable");
