@@ -33,37 +33,34 @@ arguments:
       args: ../utils/workloads/rodinia/data/heartwall/test.avi 104 8
     - name: hotspot
       path: ./utils/workloads/rodinia/openmp/hotspot/hotspot.so
-      args: 8192 8192 6 8 ../utils/workloads/rodinia/data/hotspot/temp_4096 ../utils/workloads/rodinia/data/hotspot/power_4096 output.out
+      args: 4096 4096 6 8 ../utils/workloads/rodinia/data/hotspot/temp_4096 ../utils/workloads/rodinia/data/hotspot/power_4096 output.out
     - name: hotspot3D
       path: ./utils/workloads/rodinia/openmp/hotspot3D/3D.so
       args: 512 2 5000 ../utils/workloads/rodinia/data/hotspot3D/power_512x2 ../utils/workloads/rodinia/data/hotspot3D/temp_512x2 output.out
     - name: kmeans
       path: ./utils/workloads/rodinia/openmp/kmeans/kmeans_openmp/kmeans.so
-      args: -n 8 -i ../utils/workloads/rodinia/data/kmeans/1000000_34.txt
+      args: -n 8 -i ../utils/workloads/rodinia/data/kmeans/800000_34.txt
     - name: lavaMD
       path: ./utils/workloads/rodinia/openmp/lavaMD/lavaMD.so
-      args: -cores 8 -boxes1d 35
+      args: -cores 8 -boxes1d 20
     - name: leukocyte
       path: ./utils/workloads/rodinia/openmp/leukocyte/OpenMP/leukocyte.so
-      args: 100 8 ../utils/workloads/rodinia/data/leukocyte/testfile.avi
+      args: 40 8 ../utils/workloads/rodinia/data/leukocyte/testfile.avi
     - name: lud
       path: ./utils/workloads/rodinia/openmp/lud/omp/lud_omp.so
-      args: -n 8 -s 16384
-    - name: myocyte
-      path: ./utils/workloads/rodinia/openmp/myocyte/myocyte.so
-      args: 150000 16 1 8
+      args: -n 8 -s 10240
     - name: needle
       path: ./utils/workloads/rodinia/openmp/nw/needle.so
       args: 40000 5 8
     - name: particlefilter
       path: ./utils/workloads/rodinia/openmp/particlefilter/particle_filter.so
-      args: -x 512 -y 512 -z 100 -np 100000
+      args: -x 256 -y 256 -z 100 -np 50000
     - name: pathfinder
       path: ./utils/workloads/rodinia/openmp/pathfinder/pathfinder.so
-      args: 3000000 100
+      args: 1000000 100
     - name: srad
       path: ./utils/workloads/rodinia/openmp/srad/srad_v2/srad.so
-      args: 32768 32768 0 2048 0 2048 8 0.5 10
+      args: 16384 16384 0 1024 0 1024 8 0.5 10
     - name: streamcluster
       path: ./utils/workloads/rodinia/openmp/streamcluster/sc_cpu.so
-      args: 15 30 512 131072 131072 1000 none output.txt 8
+      args: 15 30 512 32768 32768 1000 none output.txt 8

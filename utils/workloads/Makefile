@@ -39,7 +39,7 @@ rodinia_cuda:
 rodinia_data_gen:
 	cd $(RODINIA_DIR)/data/bfs/inputGen; make; ./graphgen 8388608 8M; mv graph8M.txt ../
 	cd $(RODINIA_DIR)/data/hotspot/inputGen; make; ./hotspotex; mv *_4096 ../
-	cd $(RODINIA_DIR)/data/kmeans/inpuGen; make; ./datagen 1000000; mv 1000000_34.txt ../
+	cd $(RODINIA_DIR)/data/kmeans/inpuGen; make; ./datagen 800000; mv 800000_34.txt ../
 	cd $(RODINIA_DIR)/data/hybridsort; for i in {1..200..1}; do cat 500000.txt >> 100000000.txt; done
 
 .PHONY: clean
